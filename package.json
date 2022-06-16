@@ -9,10 +9,6 @@
   "lint-staged": {
     "*.go": [
       "gofmt -w"
-    ],
-    "*.{js,jsx}": [
-      "prettier --write",
-      "eslint --fix"
     ]
   },
   "devDependencies": {
