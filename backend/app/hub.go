@@ -19,7 +19,7 @@ type Hub struct {
 
 func NewHub() *Hub {
 	return &Hub{
-		ticker:            time.NewTicker(10 * time.Second),
+		ticker:            time.NewTicker(time.Second),
 		receive:           make(chan WSClientMessage, 256),
 		register:          make(chan *WSClient),
 		unregister:        make(chan *WSClient),
