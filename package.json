@@ -1,0 +1,24 @@
+{
+  "name": "figgie",
+  "version": "1.0.0",
+  "description": "Trading simulator game",
+  "main": "index.js",
+  "author": "dkamm <davidfkamm@gmail.com>",
+  "license": "Proprietary",
+  "private": true,
+  "lint-staged": {
+    "*.go": [
+      "gofmt -w"
+    ],
+    "*.{js,jsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^8.17.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.1",
+    "prettier": "^2.7.0"
+  }
+}
