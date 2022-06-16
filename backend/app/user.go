@@ -3,14 +3,17 @@ package app
 import (
 	"math/rand"
 	"strings"
+	"time"
 )
 
+// User represents a user in the room.
 type User struct {
-	Id    string `json:"id"`
-	Name  string `json:"name"`
-	Score int    `json:"score"`
-	Admin bool   `json:"admin"`
-	Left  bool   `json:"left"`
+	Id             string `json:"id"`
+	Name           string `json:"name"`
+	Score          int    `json:"score"`
+	Admin          bool   `json:"admin"`
+	Left           bool   `json:"left"`
+	DisconnectedAt time.Time
 }
 
 var animals = []string{"bat", "cat", "dog", "elephant", "fox", "giraffe", "horse", "lion", "monkey", "panda", "penguin", "pig", "rabbit", "sheep", "tiger", "zebra"}

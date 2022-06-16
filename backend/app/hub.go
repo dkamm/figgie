@@ -8,22 +8,24 @@ import (
 )
 
 type Hub struct {
-	register   chan *WSClient
-	unregister chan *WSClient
-	ticker     *time.Ticker
-	receive    chan WSClientMessage
-	clients    map[string][]*WSClient // userId -> []*WSClient
-	rooms      map[string]*Room
+	register          chan *WSClient
+	unregister        chan *WSClient
+	ticker            *time.Ticker
+	receive           chan WSClientMessage
+	clients           map[string][]*WSClient // userId -> []*WSClient
+	rooms             map[string]*Room
+	disconnectTimeout time.Duration
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		ticker:     time.NewTicker(10 * time.Second),
-		receive:    make(chan WSClientMessage, 256),
-		register:   make(chan *WSClient),
-		unregister: make(chan *WSClient),
-		clients:    make(map[string][]*WSClient),
-		rooms:      make(map[string]*Room),
+		ticker:            time.NewTicker(10 * time.Second),
+		receive:           make(chan WSClientMessage, 256),
+		register:          make(chan *WSClient),
+		unregister:        make(chan *WSClient),
+		clients:           make(map[string][]*WSClient),
+		rooms:             make(map[string]*Room),
+		disconnectTimeout: 2 * time.Second,
 	}
 }
 
@@ -60,6 +62,42 @@ func (h *Hub) Run() {
 				h.clients[client.userId] = append(clients, client)
 			}
 			log.Printf("new client registered for %s", client.userId)
+
+		case client := <-h.unregister:
+			clients, ok := h.clients[client.userId]
+			if !ok {
+				log.Printf("clients not found for %s", client.userId)
+				return
+			}
+			if client.roomId == "" {
+				return
+			}
+			otherClients := make([]*WSClient, 0, len(clients))
+			for _, c := range clients {
+				if c != client {
+					otherClients = append(otherClients, c)
+				}
+			}
+			h.clients[client.userId] = otherClients
+
+			// Check if this client was the last one in the room
+			roomClientCount := 0
+			for _, c := range otherClients {
+				if c.roomId == client.roomId {
+					roomClientCount++
+				}
+			}
+			if roomClientCount > 0 {
+				return
+			}
+			room, ok := h.rooms[client.roomId]
+			if !ok {
+				log.Printf("room not found for %s", client.roomId)
+				return
+			}
+			user, ok := room.users[client.userId]
+			user.DisconnectedAt = time.Now()
+
 		case m := <-h.receive:
 			c := &Command{}
 
@@ -106,6 +144,10 @@ func (h *Hub) Run() {
 						})
 					message, _ := json.Marshal(event)
 					m.client.send <- message
+				} else {
+					// Reset disconnectedAt/left fields for this user in case of a reconnect
+					user.DisconnectedAt = time.Time{}
+					user.Left = false
 				}
 
 				// Notify other users in the room that a new user has joined
@@ -165,13 +207,23 @@ func (h *Hub) Run() {
 			}
 
 		case <-h.ticker.C:
-			//now := time.Now()
-			//fmt.Printf("%v - closing clients\n", now)
-			//for _, clients := range h.clients {
-			//	for _, client := range clients {
-			//		client.conn.Close()
-			//	}
-			//}
+			now := time.Now()
+
+			// Check for disconnected users
+			for _, room := range h.rooms {
+				for _, user := range room.users {
+					if !user.Left && !user.DisconnectedAt.IsZero() && now.Sub(user.DisconnectedAt) > h.disconnectTimeout {
+						user.Left = true
+
+						// Notify other users in the room that a user has left
+						otherUserIds := room.otherActiveUserIds(user.Id)
+						event := NewEvent(room.id, &UserLeftPayload{UserId: user.Id})
+						message, _ := json.Marshal(event)
+						h.sendToUsersClientsInRoom(room.id, otherUserIds, message)
+					}
+				}
+			}
+
 		}
 
 	}
