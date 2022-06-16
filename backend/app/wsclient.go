@@ -1,9 +1,9 @@
 package app
 
 import (
+	"github.com/gorilla/websocket"
 	"log"
 	"time"
-	"github.com/gorilla/websocket"
 )
 
 const (
@@ -15,28 +15,27 @@ const (
 
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
-
 )
 
 type WSClient struct {
 	userId string
 	roomId string
-	hub *Hub
-	conn *websocket.Conn
-	send chan []byte
+	hub    *Hub
+	conn   *websocket.Conn
+	send   chan []byte
 }
 
 type WSClientMessage struct {
-	client *WSClient
+	client  *WSClient
 	message []byte
 }
 
-func NewWSClient(userId string,  hub *Hub, conn *websocket.Conn) *WSClient {
+func NewWSClient(userId string, hub *Hub, conn *websocket.Conn) *WSClient {
 	return &WSClient{
 		userId: userId,
-		hub: hub,
-		conn: conn,
-		send: make(chan []byte, 256),
+		hub:    hub,
+		conn:   conn,
+		send:   make(chan []byte, 256),
 	}
 }
 

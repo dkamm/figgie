@@ -1,7 +1,7 @@
 package app
 
 type Room struct {
-	id string
+	id    string
 	users map[string]*User
 }
 

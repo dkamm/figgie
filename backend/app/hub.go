@@ -1,29 +1,29 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
-	"encoding/json"
 )
 
 type Hub struct {
-	register chan *WSClient
+	register   chan *WSClient
 	unregister chan *WSClient
-	ticker *time.Ticker
-	receive chan WSClientMessage
-	clients map[string][]*WSClient // userId -> []*WSClient
-	rooms map[string]*Room
+	ticker     *time.Ticker
+	receive    chan WSClientMessage
+	clients    map[string][]*WSClient // userId -> []*WSClient
+	rooms      map[string]*Room
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		ticker: time.NewTicker(10 * time.Second),
-		receive: make(chan WSClientMessage, 256),
-		register: make(chan *WSClient),
+		ticker:     time.NewTicker(10 * time.Second),
+		receive:    make(chan WSClientMessage, 256),
+		register:   make(chan *WSClient),
 		unregister: make(chan *WSClient),
-		clients: make(map[string][]*WSClient),
-		rooms: make(map[string]*Room),
+		clients:    make(map[string][]*WSClient),
+		rooms:      make(map[string]*Room),
 	}
 }
 
@@ -53,7 +53,7 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
-			clients, ok := h.clients[client.userId];
+			clients, ok := h.clients[client.userId]
 			if !ok {
 				h.clients[client.userId] = []*WSClient{client}
 			} else {
@@ -99,27 +99,27 @@ func (h *Hub) Run() {
 
 					// Sent the current room state to the client
 					event := NewEvent(
-						c.RoomId, 
+						c.RoomId,
 						&JoinedRoomPayload{
 							UserId: user.Id,
-							Users: room.activeUsers(),	
+							Users:  room.activeUsers(),
 						})
-					message, _ := json.Marshal(event)	
-					m.client.send <- message	
+					message, _ := json.Marshal(event)
+					m.client.send <- message
 				}
 
 				// Notify other users in the room that a new user has joined
 				otherUserIds := room.otherActiveUserIds(user.Id)
-				if (len(otherUserIds) > 0) {
+				if len(otherUserIds) > 0 {
 					payload := UserJoinedPayload(*user)
 					event := NewEvent(c.RoomId, &payload)
 					message, _ := json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, otherUserIds, message)
 				}
-			
+
 			case LeaveRoomType:
 				room, ok := h.rooms[c.RoomId]
-				if (!ok) {
+				if !ok {
 					return
 				}
 				m.client.roomId = c.RoomId
@@ -134,7 +134,7 @@ func (h *Hub) Run() {
 
 				// Notify the user's clients that the user has left
 				event := NewEvent(c.RoomId, &LeftRoomPayload{})
-				message, _ := json.Marshal(event)	
+				message, _ := json.Marshal(event)
 				h.sendToUserClientsInRoom(c.RoomId, m.client.userId, message)
 
 				// Move the user's clients out of the room
@@ -157,7 +157,7 @@ func (h *Hub) Run() {
 				p := &SendMessagePayload{}
 				json.Unmarshal(c.Payload, p)
 				event := NewEvent(c.RoomId, &UserMessagedPayload{
-					UserId: m.client.userId,
+					UserId:  m.client.userId,
 					Message: p.Message,
 				})
 				message, _ := json.Marshal(event)

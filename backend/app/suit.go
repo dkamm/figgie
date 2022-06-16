@@ -10,14 +10,14 @@ const (
 )
 
 func SisterSuit(s Suit) Suit {
-	switch (s) {
-		case Club:
-			return Spade
-		case Spade:
-			return Club
-		case Diamond:
-			return Heart
-		default:
-			return Diamond
+	switch s {
+	case Club:
+		return Spade
+	case Spade:
+		return Club
+	case Diamond:
+		return Heart
+	default:
+		return Diamond
 	}
 }

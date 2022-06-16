@@ -6,13 +6,12 @@ import (
 
 type CommandType string
 
-
 const (
-	CreateRoomType CommandType = "createRoom"
-	ListRoomsType = "listRooms"
-	JoinRoomType = "joinRoom"
-	LeaveRoomType = "leaveRoom"
-	SendMessageType = "sendMessage"
+	CreateRoomType  CommandType = "createRoom"
+	ListRoomsType               = "listRooms"
+	JoinRoomType                = "joinRoom"
+	LeaveRoomType               = "leaveRoom"
+	SendMessageType             = "sendMessage"
 )
 
 type JoinRoomPayload struct {
@@ -24,7 +23,7 @@ type SendMessagePayload struct {
 }
 
 type Command struct {
-	Type CommandType `json:"type"`
-	RoomId string `json:"roomId,omitempty"`
+	Type    CommandType     `json:"type"`
+	RoomId  string          `json:"roomId,omitempty"`
 	Payload json.RawMessage `json:"payload"`
 }
