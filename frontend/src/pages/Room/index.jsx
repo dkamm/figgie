@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useReducer, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useWSClient } from "contexts/WSContext";
 import { roomReducer, initialState } from "reducers/room";
 import { ActivityLog } from "pages/Room/ActivityLog";
@@ -8,6 +8,8 @@ import { Avatar } from "components/Avatar";
 
 export const Room = () => {
   const { roomId } = useParams();
+  const [searchParams] = useSearchParams();
+  const name = searchParams.get("name") || "";
 
   const { wsclient, isConnected } = useWSClient();
 
@@ -23,15 +25,13 @@ export const Room = () => {
 
   const send = useCallback(
     (type, payload) => {
-      wsclient.send(
-        JSON.stringify({
-          type,
-          roomId,
-          payload,
-        })
-      );
+      wsclient.send({
+        type,
+        roomId,
+        payload,
+      });
     },
-    [wsclient, roomId]
+    [roomId]
   );
 
   const handler = useCallback(
@@ -86,9 +86,9 @@ export const Room = () => {
   useEffect(() => {
     if (!isConnected) return;
     wsclient.addMessageHandler(handler);
-    joinRoom("");
+    joinRoom(name);
     return () => wsclient.removeMessageHandler(handler);
-  }, [wsclient, handler, isConnected, joinRoom]);
+  }, [wsclient, handler, isConnected, joinRoom, name]);
 
   const onInputSubmit = useCallback(
     (message) => {
@@ -100,15 +100,21 @@ export const Room = () => {
   const activeUserIds = users.allIds.filter((id) => !users.byId[id].left);
 
   return (
-    <div>
-      {loading && <div>Loading...</div>}
-      {!loading && failure && <div>{failure}</div>}
+    <div className="grid grid-cols-4 grid-rows-4 h-screen">
+      {loading && (
+        <div className="row-start-2 row-end-4 col-start-2 col-end-4">
+          Loading...
+        </div>
+      )}
+      {!loading && failure && (
+        <div className="row-start-2 row-end-4 col-start-2 col-end-4">
+          {failure}
+        </div>
+      )}
       {!loading && !failure && (
         <>
-          <div>
-            <div>
-              <strong>Users</strong>
-            </div>
+          <div className="row-start-2 row-end-3 col-start-2 col-end-3">
+            <div>Users</div>
             {activeUserIds.map((id) => (
               <div key={id}>
                 <Avatar user={users.byId[id]} />{" "}
@@ -116,11 +122,12 @@ export const Room = () => {
               </div>
             ))}
           </div>
-          <br />
-          <div>Chat</div>
-          <ActivityLog users={users} activityEvents={activityEvents} />
-          <br />
-          <Input onSubmit={onInputSubmit} />
+          <div className="row-start-3 row-end-4 col-start-2 col-end-3 flex flex-col">
+            <div className="flex-grow overflow-scroll">
+              <ActivityLog users={users} activityEvents={activityEvents} />
+            </div>
+            <Input onSubmit={onInputSubmit} />
+          </div>
         </>
       )}
     </div>

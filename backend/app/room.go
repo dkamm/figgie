@@ -1,12 +1,25 @@
 package app
 
 type Room struct {
-	id    string
-	users map[string]*User
+	id     string
+	config RoomConfig
+	users  map[string]*User
 }
 
-func NewRoom(id string) *Room {
-	return &Room{id: id, users: make(map[string]*User)}
+func NewRoom(id string, config RoomConfig) *Room {
+	return &Room{
+		id:     id,
+		config: config,
+		users:  make(map[string]*User)}
+}
+
+func (r *Room) admin() *User {
+	for _, user := range r.users {
+		if user.Admin {
+			return user
+		}
+	}
+	return nil
 }
 
 func (r *Room) activeUsers() []*User {

@@ -20,7 +20,9 @@ module.exports = {
   },
   plugins: ["react", "import", "react-hooks", "json-format"],
   ignorePatterns: ["node_modules/"],
-  rules: {},
+  rules: {
+    "react/prop-types": "off",
+  },
   settings: {
     react: {
       version: "detect",

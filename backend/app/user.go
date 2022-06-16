@@ -8,12 +8,12 @@ import (
 
 // User represents a user in the room.
 type User struct {
-	Id             string `json:"id"`
-	Name           string `json:"name"`
-	Score          int    `json:"score"`
-	Admin          bool   `json:"admin"`
-	Left           bool   `json:"left"`
-	DisconnectedAt time.Time
+	Id             string    `json:"id"`
+	Name           string    `json:"name"`
+	Score          int       `json:"score"`
+	Admin          bool      `json:"admin"`
+	Left           bool      `json:"left"`
+	DisconnectedAt time.Time `json:"-"`
 }
 
 var animals = []string{"bat", "cat", "dog", "elephant", "fox", "giraffe", "horse", "lion", "monkey", "panda", "penguin", "pig", "rabbit", "sheep", "tiger", "zebra"}

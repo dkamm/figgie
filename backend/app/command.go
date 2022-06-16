@@ -14,6 +14,16 @@ const (
 	SendMessageType             = "sendMessage"
 )
 
+type CreateRoomPayload struct {
+	UserName string     `json:"userName,omitempty"`
+	Config   RoomConfig `json:"config"`
+}
+
+type ListRoomsPayload struct {
+	Page     int `json:"page"`
+	PageSize int `json:"pageSize"`
+}
+
 type JoinRoomPayload struct {
 	Name string `json:"name,omitempty"`
 }

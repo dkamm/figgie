@@ -25,6 +25,11 @@ type WSClient struct {
 	send   chan []byte
 }
 
+type WSClientRegister struct {
+	client *WSClient
+	done   chan bool
+}
+
 type WSClientMessage struct {
 	client  *WSClient
 	message []byte
@@ -88,13 +93,8 @@ func (c *WSClient) writePump() {
 			if err != nil {
 				return
 			}
+			log.Printf("sending message: %s", message)
 			w.Write(message)
-
-			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(<-c.send)
-			}
 
 			if err := w.Close(); err != nil {
 				return
@@ -109,7 +109,9 @@ func (c *WSClient) writePump() {
 }
 
 func (ws *WSClient) Register() {
-	ws.hub.register <- ws
+	done := make(chan bool, 1)
+	ws.hub.register <- WSClientRegister{client: ws, done: done}
+	<-done
 }
 
 func (ws *WSClient) Run() {

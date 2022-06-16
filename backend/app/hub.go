@@ -3,12 +3,13 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"log"
 	"time"
 )
 
 type Hub struct {
-	register          chan *WSClient
+	register          chan WSClientRegister
 	unregister        chan *WSClient
 	ticker            *time.Ticker
 	receive           chan WSClientMessage
@@ -21,7 +22,7 @@ func NewHub() *Hub {
 	return &Hub{
 		ticker:            time.NewTicker(time.Second),
 		receive:           make(chan WSClientMessage, 256),
-		register:          make(chan *WSClient),
+		register:          make(chan WSClientRegister),
 		unregister:        make(chan *WSClient),
 		clients:           make(map[string][]*WSClient),
 		rooms:             make(map[string]*Room),
@@ -50,27 +51,30 @@ func (h *Hub) sendToUserClientsInRoom(roomId string, userId string, message []by
 
 func (h *Hub) Run() {
 
-	h.rooms["test"] = NewRoom("test")
+	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10})
 
 	for {
 		select {
-		case client := <-h.register:
+		case r := <-h.register:
+			client := r.client
 			clients, ok := h.clients[client.userId]
 			if !ok {
 				h.clients[client.userId] = []*WSClient{client}
 			} else {
 				h.clients[client.userId] = append(clients, client)
 			}
-			log.Printf("new client registered for %s", client.userId)
+			log.Printf("client registered for %s", client.userId)
+			r.done <- true
 
 		case client := <-h.unregister:
+			log.Printf("client unregistered for %v", client.userId)
 			clients, ok := h.clients[client.userId]
 			if !ok {
 				log.Printf("clients not found for %s", client.userId)
-				return
+				continue
 			}
 			if client.roomId == "" {
-				return
+				continue
 			}
 			otherClients := make([]*WSClient, 0, len(clients))
 			for _, c := range clients {
@@ -88,12 +92,12 @@ func (h *Hub) Run() {
 				}
 			}
 			if roomClientCount > 0 {
-				return
+				continue
 			}
 			room, ok := h.rooms[client.roomId]
 			if !ok {
 				log.Printf("room not found for %s", client.roomId)
-				return
+				continue
 			}
 			user, ok := room.users[client.userId]
 			user.DisconnectedAt = time.Now()
@@ -111,17 +115,78 @@ func (h *Hub) Run() {
 
 			switch c.Type {
 
+			case ListRoomsType:
+				p := &ListRoomsPayload{}
+				json.Unmarshal(c.Payload, &p)
+				summaries := make([]RoomSummary, 0, len(h.rooms))
+				for _, room := range h.rooms {
+					if !room.config.Private {
+						adminName := ""
+						admin := room.admin()
+						if admin != nil {
+							adminName = admin.Name
+						}
+						summaries = append(summaries, RoomSummary{
+							RoomId:        room.id,
+							RoomName:      room.config.Name,
+							AdminName:     adminName,
+							NumSpectators: len(room.activeUserIds()),
+							MaxSpectators: room.config.MaxSpectators,
+						})
+					}
+				}
+
+				page := p.Page
+				maxPage := len(summaries) / p.PageSize
+				if page > maxPage {
+					page = maxPage
+				}
+
+				start := page * p.PageSize
+				end := (page + 1) * p.PageSize
+				if end > len(summaries) {
+					end = len(summaries)
+				}
+
+				data, _ := json.Marshal(summaries[start:end])
+				event := &PaginatedEvent{
+					Type:     RoomsListedType,
+					Total:    len(summaries),
+					Page:     page,
+					PageSize: p.PageSize,
+					Data:     data,
+				}
+				message, _ := json.Marshal(event)
+				m.client.send <- message
+
+			case CreateRoomType:
+				p := &CreateRoomPayload{}
+				json.Unmarshal(c.Payload, &p)
+				id := "room_" + uuid.New().String()
+				room := NewRoom(id, p.Config)
+				h.rooms[id] = room
+				user := NewUser(m.client.userId, p.UserName, true)
+				room.users[m.client.userId] = user
+
+				m.client.roomId = room.id
+
+				event := NewEvent(room.id,
+					&RoomCreatedPayload{})
+				message, _ := json.Marshal(event)
+				m.client.send <- message
+
 			case JoinRoomType:
 				room, ok := h.rooms[c.RoomId]
 				if !ok {
 					event := NewEvent(c.RoomId, &JoinFailedPayload{Reason: "This room does not exist"})
 					message, _ := json.Marshal(event)
 					m.client.send <- message
-					return
+					continue
 				}
 				m.client.roomId = c.RoomId
 				user, ok := room.users[m.client.userId]
 				if !ok {
+					// Add user to the room if he isn't already there
 					p := &JoinRoomPayload{}
 					json.Unmarshal(c.Payload, p)
 					name := p.Name
@@ -134,21 +199,22 @@ func (h *Hub) Run() {
 						len(room.activeUsers()) == 0,
 					)
 					room.users[user.Id] = user
-
-					// Sent the current room state to the client
-					event := NewEvent(
-						c.RoomId,
-						&JoinedRoomPayload{
-							UserId: user.Id,
-							Users:  room.activeUsers(),
-						})
-					message, _ := json.Marshal(event)
-					m.client.send <- message
 				} else {
 					// Reset disconnectedAt/left fields for this user in case of a reconnect
 					user.DisconnectedAt = time.Time{}
 					user.Left = false
 				}
+
+				// Send the current room state to the client
+				event := NewEvent(
+					c.RoomId,
+					&JoinedRoomPayload{
+						UserId: user.Id,
+						Users:  room.activeUsers(),
+						Config: room.config,
+					})
+				message, _ := json.Marshal(event)
+				m.client.send <- message
 
 				// Notify other users in the room that a new user has joined
 				otherUserIds := room.otherActiveUserIds(user.Id)
@@ -162,13 +228,13 @@ func (h *Hub) Run() {
 			case LeaveRoomType:
 				room, ok := h.rooms[c.RoomId]
 				if !ok {
-					return
+					continue
 				}
 				m.client.roomId = c.RoomId
 
 				user, ok := room.users[m.client.userId]
 				if !ok {
-					return
+					continue
 				}
 
 				// Mark the user as having left the room
@@ -194,7 +260,7 @@ func (h *Hub) Run() {
 			case SendMessageType:
 				room, ok := h.rooms[c.RoomId]
 				if !ok {
-					return
+					continue
 				}
 				p := &SendMessagePayload{}
 				json.Unmarshal(c.Payload, p)

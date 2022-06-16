@@ -9,6 +9,8 @@ type EventType string
 
 const (
 	NullEventType    EventType = ""
+	RoomCreatedType            = "roomCreated"
+	RoomsListedType            = "roomsListed"
 	JoinFailedType             = "joinFailed"
 	JoinedRoomType             = "joinedRoom"
 	LeftRoomType               = "leftRoom"
@@ -17,13 +19,20 @@ const (
 	UserMessagedType           = "userMessaged"
 )
 
+type RoomCreatedPayload struct{}
+
+type RoomsListedPayload struct {
+	Rooms []RoomSummary `json:"rooms"`
+}
+
 type JoinFailedPayload struct {
 	Reason string `json:"reason"`
 }
 
 type JoinedRoomPayload struct {
-	UserId string  `json:"userId"`
-	Users  []*User `json:"users"`
+	UserId string     `json:"userId"`
+	Users  []*User    `json:"users"`
+	Config RoomConfig `json:"config"`
 }
 
 type LeftRoomPayload struct{}
@@ -45,12 +54,28 @@ type Event struct {
 	Payload json.RawMessage `json:"payload"`
 }
 
+type PaginatedEvent struct {
+	Total    int             `json:"total"`
+	Page     int             `json:"page"`
+	PageSize int             `json:"pageSize"`
+	Type     EventType       `json:"type"`
+	Data     json.RawMessage `json:"data"`
+}
+
 func NewEvent(roomId string, payload interface{}) *Event {
 
 	var raw json.RawMessage
 	var eventType = NullEventType
 
 	switch payload.(type) {
+
+	case *RoomsListedPayload:
+		eventType = RoomsListedType
+		raw, _ = json.Marshal(payload.(*RoomsListedPayload))
+
+	case *RoomCreatedPayload:
+		eventType = RoomCreatedType
+		raw, _ = json.Marshal(payload.(*RoomCreatedPayload))
 
 	case *JoinFailedPayload:
 		eventType = JoinFailedType
