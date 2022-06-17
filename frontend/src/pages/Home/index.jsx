@@ -59,7 +59,11 @@ export const Home = () => {
             <button className="block" onClick={createRoom}>
               Create
             </button>
-            <form className="flex flex-col" onSubmit={onSubmitJoinRoom}>
+            <form
+              className="flex flex-col"
+              onSubmit={onSubmitJoinRoom}
+              autoComplete="off"
+            >
               <div>
                 <input type="text" name="name" placeholder="Name" />
               </div>
