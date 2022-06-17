@@ -11,6 +11,8 @@ type User struct {
 	Id             string    `json:"id"`
 	Name           string    `json:"name"`
 	Score          int       `json:"score"`
+	Seat           int       `json:"-"` // -1 if not seated
+	SpectatorSeat  int       `json:"-"` // -1 if not spectating
 	Admin          bool      `json:"admin"`
 	Left           bool      `json:"left"`
 	DisconnectedAt time.Time `json:"-"`
@@ -23,6 +25,6 @@ func RandomUserName() string {
 	return strings.Title(adjectives[rand.Intn(len(adjectives))]) + " " + strings.Title(animals[rand.Intn(len(animals))])
 }
 
-func NewUser(id string, name string, admin bool) *User {
-	return &User{Id: id, Name: name, Admin: admin}
+func NewUser(id string, name string, seat int, spectatorSeat int, admin bool) *User {
+	return &User{Id: id, Name: name, Seat: seat, SpectatorSeat: spectatorSeat, Admin: admin}
 }

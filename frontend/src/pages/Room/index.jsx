@@ -4,7 +4,7 @@ import { useWSClient } from "contexts/WSContext";
 import { roomReducer, initialState } from "reducers/room";
 import { ActivityLog } from "pages/Room/ActivityLog";
 import { Input } from "pages/Room/Input";
-import { Avatar } from "components/Avatar";
+import { Seats } from "pages/Room/Seats";
 
 export const Room = () => {
   const { roomId } = useParams();
@@ -18,10 +18,8 @@ export const Room = () => {
   const [loading, setLoading] = useState(true);
   const [failure, setFailure] = useState(null);
 
-  const [{ userId, users, activityEvents }, dispatch] = useReducer(
-    roomReducer,
-    initialState
-  );
+  const [{ userId, users, activityEvents, seats, spectators }, dispatch] =
+    useReducer(roomReducer, initialState);
 
   const send = useCallback(
     (type, payload) => {
@@ -56,6 +54,9 @@ export const Room = () => {
         case "userJoined":
         case "userLeft":
         case "userMessaged":
+        case "userChangedName":
+        case "userTookSeat":
+        case "userStartedSpectating":
           dispatch({ type, payload });
           break;
         default:
@@ -79,6 +80,24 @@ export const Room = () => {
     [send]
   );
 
+  const changeName = useCallback(
+    (name) => {
+      send("changeName", { name });
+    },
+    [send]
+  );
+
+  const takeSeat = useCallback(
+    (seat) => {
+      send("takeSeat", { seat });
+    },
+    [send]
+  );
+
+  const startSpectating = useCallback(() => {
+    send("startSpectating", {});
+  }, [send]);
+
   //const leaveRoom = useCallback(() => {
   //    send("leaveRoom", null)
   //}, [send])
@@ -97,7 +116,8 @@ export const Room = () => {
     [sendMessage]
   );
 
-  const activeUserIds = users.allIds.filter((id) => !users.byId[id].left);
+  const isAdmin = userId && users.byId[userId].admin;
+  const isSpectating = userId && spectators.find((s) => s === userId);
 
   return (
     <div className="grid grid-cols-4 grid-rows-4 h-screen">
@@ -112,23 +132,31 @@ export const Room = () => {
         </div>
       )}
       {!loading && !failure && (
-        <>
-          <div className="row-start-2 row-end-3 col-start-2 col-end-3">
-            <div>Users</div>
-            {activeUserIds.map((id) => (
-              <div key={id}>
-                <Avatar user={users.byId[id]} />{" "}
-                {userId === id && <span>(You)</span>}
-              </div>
-            ))}
+        <div className="row-span-full col-start-2 col-end-4">
+          <div>
+            <div>
+              <strong>Seats</strong>
+            </div>
+            <Seats
+              userId={userId}
+              seats={seats}
+              spectators={spectators}
+              users={users}
+              takeSeat={takeSeat}
+              changeName={changeName}
+              isAdmin={isAdmin}
+            />
+            {!isSpectating && (
+              <button onClick={startSpectating}>Spectate</button>
+            )}
           </div>
-          <div className="row-start-3 row-end-4 col-start-2 col-end-3 flex flex-col">
+          <div>
             <div className="flex-grow overflow-scroll">
               <ActivityLog users={users} activityEvents={activityEvents} />
             </div>
             <Input onSubmit={onInputSubmit} />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

@@ -10,7 +10,45 @@ func NewRoom(id string, config RoomConfig) *Room {
 	return &Room{
 		id:     id,
 		config: config,
-		users:  make(map[string]*User)}
+		users:  make(map[string]*User),
+	}
+}
+
+func (r *Room) shiftSpectatorsDown(spectatorSeat int) {
+	for _, user := range r.users {
+		if !user.Left && user.SpectatorSeat > spectatorSeat {
+			user.SpectatorSeat--
+		}
+	}
+}
+
+func (r *Room) seats() []string {
+	seats := make([]string, 4)
+	for _, user := range r.users {
+		if !user.Left && user.Seat >= 0 {
+			seats[user.Seat] = user.Id
+		}
+	}
+	return seats
+}
+
+func (r *Room) spectators() []string {
+	spectators := make([]string, r.config.MaxSpectators)
+	for _, user := range r.users {
+		if !user.Left && user.SpectatorSeat >= 0 {
+			spectators[user.SpectatorSeat] = user.Id
+		}
+	}
+	return spectators
+}
+
+func (r *Room) getNextIndex(userIds []string) int {
+	for i := 0; i < len(userIds); i++ {
+		if userIds[i] == "" {
+			return i
+		}
+	}
+	return -1
 }
 
 func (r *Room) admin() *User {

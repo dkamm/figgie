@@ -7,11 +7,14 @@ import (
 type CommandType string
 
 const (
-	CreateRoomType  CommandType = "createRoom"
-	ListRoomsType               = "listRooms"
-	JoinRoomType                = "joinRoom"
-	LeaveRoomType               = "leaveRoom"
-	SendMessageType             = "sendMessage"
+	CreateRoomType      CommandType = "createRoom"
+	ListRoomsType                   = "listRooms"
+	JoinRoomType                    = "joinRoom"
+	LeaveRoomType                   = "leaveRoom"
+	SendMessageType                 = "sendMessage"
+	TakeSeatType                    = "takeSeat"
+	StartSpectatingType             = "startSpectating"
+	ChangeNameType                  = "changeName"
 )
 
 type CreateRoomPayload struct {
@@ -30,6 +33,16 @@ type JoinRoomPayload struct {
 
 type SendMessagePayload struct {
 	Message string `json:"message"`
+}
+
+type TakeSeatPayload struct {
+	Seat int `json:"seat"`
+}
+
+type StartSpectatingPayload struct{}
+
+type ChangeNamePayload struct {
+	Name string `json:"name"`
 }
 
 type Command struct {

@@ -8,15 +8,18 @@ import (
 type EventType string
 
 const (
-	NullEventType    EventType = ""
-	RoomCreatedType            = "roomCreated"
-	RoomsListedType            = "roomsListed"
-	JoinFailedType             = "joinFailed"
-	JoinedRoomType             = "joinedRoom"
-	LeftRoomType               = "leftRoom"
-	UserJoinedType             = "userJoined"
-	UserLeftType               = "userLeft"
-	UserMessagedType           = "userMessaged"
+	NullEventType         EventType = ""
+	RoomCreatedType                 = "roomCreated"
+	RoomsListedType                 = "roomsListed"
+	JoinFailedType                  = "joinFailed"
+	JoinedRoomType                  = "joinedRoom"
+	LeftRoomType                    = "leftRoom"
+	UserJoinedType                  = "userJoined"
+	UserLeftType                    = "userLeft"
+	UserMessagedType                = "userMessaged"
+	UserChangedNameType             = "userChangedName"
+	UserTookSeat                    = "userTookSeat"
+	UserStartedSpectating           = "userStartedSpectating"
 )
 
 type RoomCreatedPayload struct{}
@@ -30,9 +33,11 @@ type JoinFailedPayload struct {
 }
 
 type JoinedRoomPayload struct {
-	UserId string     `json:"userId"`
-	Users  []*User    `json:"users"`
-	Config RoomConfig `json:"config"`
+	UserId     string     `json:"userId"`
+	Users      []*User    `json:"users"`
+	Config     RoomConfig `json:"config"`
+	Seats      []string   `json:"seats"`
+	Spectators []string   `json:"spectators"`
 }
 
 type LeftRoomPayload struct{}
@@ -46,6 +51,20 @@ type UserLeftPayload struct {
 type UserMessagedPayload struct {
 	UserId  string `json:"userId"`
 	Message string `json:"message"`
+}
+
+type UserChangedNamePayload struct {
+	UserId string `json:"userId"`
+	Name   string `json:"name"`
+}
+
+type UserTookSeatPayload struct {
+	UserId string `json:"userId"`
+	Seat   int    `json:"seat"`
+}
+
+type UserStartedSpectatingPayload struct {
+	UserId string `json:"userId"`
 }
 
 type Event struct {
@@ -100,6 +119,18 @@ func NewEvent(roomId string, payload interface{}) *Event {
 	case *UserMessagedPayload:
 		eventType = UserMessagedType
 		raw, _ = json.Marshal(payload.(*UserMessagedPayload))
+
+	case *UserChangedNamePayload:
+		eventType = UserChangedNameType
+		raw, _ = json.Marshal(payload.(*UserChangedNamePayload))
+
+	case *UserTookSeatPayload:
+		eventType = UserTookSeat
+		raw, _ = json.Marshal(payload.(*UserTookSeatPayload))
+
+	case *UserStartedSpectatingPayload:
+		eventType = UserStartedSpectating
+		raw, _ = json.Marshal(payload.(*UserStartedSpectatingPayload))
 
 	default:
 		log.Printf("invalid payload")

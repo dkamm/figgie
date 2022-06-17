@@ -165,7 +165,7 @@ func (h *Hub) Run() {
 				id := "room_" + uuid.New().String()
 				room := NewRoom(id, p.Config)
 				h.rooms[id] = room
-				user := NewUser(m.client.userId, p.UserName, true)
+				user := NewUser(m.client.userId, p.UserName, 0, -1, true)
 				room.users[m.client.userId] = user
 
 				m.client.roomId = room.id
@@ -183,6 +183,16 @@ func (h *Hub) Run() {
 					m.client.send <- message
 					continue
 				}
+
+				activeUsers := room.activeUsers()
+
+				if len(activeUsers) >= 4+room.config.MaxSpectators {
+					event := NewEvent(c.RoomId, &JoinFailedPayload{Reason: "This room is full"})
+					message, _ := json.Marshal(event)
+					m.client.send <- message
+					continue
+				}
+
 				m.client.roomId = c.RoomId
 				user, ok := room.users[m.client.userId]
 				if !ok {
@@ -193,10 +203,21 @@ func (h *Hub) Run() {
 					if name == "" {
 						name = RandomUserName()
 					}
+					seat := room.getNextIndex(room.seats())
+					spectatorSeat := -1
+					if seat == -1 {
+						spectatorSeat = room.getNextIndex(room.spectators())
+					}
+					if seat == -1 && spectatorSeat == -1 {
+						log.Printf("something went wrong. could not assign seat room=%s", room.id)
+						continue
+					}
 					user = NewUser(
 						m.client.userId,
 						name,
-						len(room.activeUsers()) == 0,
+						seat,
+						spectatorSeat,
+						len(activeUsers) == 0,
 					)
 					room.users[user.Id] = user
 				} else {
@@ -209,9 +230,11 @@ func (h *Hub) Run() {
 				event := NewEvent(
 					c.RoomId,
 					&JoinedRoomPayload{
-						UserId: user.Id,
-						Users:  room.activeUsers(),
-						Config: room.config,
+						UserId:     user.Id,
+						Users:      room.activeUsers(),
+						Config:     room.config,
+						Seats:      room.seats(),
+						Spectators: room.spectators(),
 					})
 				message, _ := json.Marshal(event)
 				m.client.send <- message
@@ -235,6 +258,11 @@ func (h *Hub) Run() {
 				user, ok := room.users[m.client.userId]
 				if !ok {
 					continue
+				}
+
+				// Shift spectators down if user was a spectator
+				if user.SpectatorSeat > 0 {
+					room.shiftSpectatorsDown(user.SpectatorSeat)
 				}
 
 				// Mark the user as having left the room
@@ -268,6 +296,84 @@ func (h *Hub) Run() {
 					UserId:  m.client.userId,
 					Message: p.Message,
 				})
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
+			case TakeSeatType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+				p := &TakeSeatPayload{}
+				json.Unmarshal(c.Payload, p)
+				if p.Seat > 3 {
+					log.Printf("invalid seat: %d", p.Seat)
+					continue
+				}
+				seats := room.seats()
+				if seats[p.Seat] != "" {
+					log.Printf("seat %d is already taken", p.Seat)
+					continue
+				}
+				user, ok := room.users[m.client.userId]
+				if !ok {
+					continue
+				}
+				spectatorSeat := user.Seat
+				if spectatorSeat >= 0 {
+					// User was a spectator so shift the spectators that are after him down
+					room.shiftSpectatorsDown(spectatorSeat)
+				}
+				user.Seat = p.Seat
+				user.SpectatorSeat = -1
+
+				event := NewEvent(c.RoomId, &UserTookSeatPayload{
+					UserId: m.client.userId,
+					Seat:   p.Seat,
+				})
+
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
+			case ChangeNameType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+				p := &ChangeNamePayload{}
+				json.Unmarshal(c.Payload, p)
+				user, ok := room.users[m.client.userId]
+				if !ok {
+					continue
+				}
+				user.Name = p.Name
+				event := NewEvent(c.RoomId, &UserChangedNamePayload{
+					UserId: m.client.userId,
+					Name:   user.Name,
+				})
+
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
+			case StartSpectatingType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+				user, ok := room.users[m.client.userId]
+				spectators := room.spectators()
+				spectatorSeat := room.getNextIndex(spectators)
+				if spectatorSeat == -1 {
+					log.Printf("next spectator seat is wrong! room=%s", room.id)
+					continue
+				}
+				user.Seat = -1
+				user.SpectatorSeat = spectatorSeat
+
+				event := NewEvent(c.RoomId, &UserStartedSpectatingPayload{
+					UserId: m.client.userId,
+				})
+
 				message, _ := json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 			}
