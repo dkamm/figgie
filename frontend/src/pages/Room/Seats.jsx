@@ -44,7 +44,9 @@ const SeatedUser = ({ user, isUser, isAdmin, changeName, isSpectating }) => {
             <button onClick={() => setEditing(false)}>Cancel</button>
             <button
               onClick={() => {
-                changeName(name);
+                if (name != user.name) {
+                  changeName(name);
+                }
                 setEditing(false);
               }}
             >
