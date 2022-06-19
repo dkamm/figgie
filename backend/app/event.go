@@ -8,18 +8,25 @@ import (
 type EventType string
 
 const (
-	NullEventType         EventType = ""
-	RoomCreatedType                 = "roomCreated"
-	RoomsListedType                 = "roomsListed"
-	JoinFailedType                  = "joinFailed"
-	JoinedRoomType                  = "joinedRoom"
-	LeftRoomType                    = "leftRoom"
-	UserJoinedType                  = "userJoined"
-	UserLeftType                    = "userLeft"
-	UserMessagedType                = "userMessaged"
-	UserChangedNameType             = "userChangedName"
-	UserTookSeat                    = "userTookSeat"
-	UserStartedSpectating           = "userStartedSpectating"
+	NullEventType             EventType = ""
+	RoomCreatedType                     = "roomCreated"
+	RoomsListedType                     = "roomsListed"
+	JoinFailedType                      = "joinFailed"
+	JoinedRoomType                      = "joinedRoom"
+	LeftRoomType                        = "leftRoom"
+	UserJoinedType                      = "userJoined"
+	UserLeftType                        = "userLeft"
+	UserMessagedType                    = "userMessaged"
+	UserChangedNameType                 = "userChangedName"
+	UserTookSeatType                    = "userTookSeat"
+	UserStartedSpectatingType           = "userStartedSpectating"
+	UserPromotedType                    = "userPromoted"
+	UserKickedType                      = "userKicked"
+	GameStartedType                     = "gameStarted"
+	GameEndedType                       = "gameEnded"
+	OrderAddedType                      = "orderAdded"
+	OrderTradedType                     = "orderTraded"
+	OrderRejectedType                   = "orderRejected"
 )
 
 type RoomCreatedPayload struct{}
@@ -38,6 +45,16 @@ type JoinedRoomPayload struct {
 	Config     RoomConfig `json:"config"`
 	Seats      []string   `json:"seats"`
 	Spectators []string   `json:"spectators"`
+	Game       *Game      `json:"game"`
+}
+
+type JoinedRoomRestrictedPayload struct {
+	UserId     string              `json:"userId"`
+	Users      []*User             `json:"users"`
+	Config     RoomConfig          `json:"config"`
+	Seats      []string            `json:"seats"`
+	Spectators []string            `json:"spectators"`
+	Game       *GameRestrictedView `json:"game"`
 }
 
 type LeftRoomPayload struct{}
@@ -66,6 +83,39 @@ type UserTookSeatPayload struct {
 type UserStartedSpectatingPayload struct {
 	UserId string `json:"userId"`
 }
+
+type UserPromotedPayload struct {
+	UserId string `json:"userId"`
+}
+
+type UserKickedPayload struct {
+	UserId string `json:"userId"`
+}
+
+type OrderAddedPayload struct {
+	Player int  `json:"player"`
+	Price  int  `json:"price"`
+	Suit   Suit `json:"suit"`
+	Side   Side `json:"side"`
+}
+
+type OrderTradedPayload struct {
+	Player        int  `json:"player"`
+	RestingPlayer int  `json:"restingPlayer"`
+	Price         int  `json:"price"`
+	Suit          Suit `json:"suit"`
+	Side          Side `json:"side"`
+}
+
+type OrderRejectedPayload struct {
+	Reason string `json:"reason"`
+}
+
+type GameStartedRestrictedPayload = GameRestrictedView
+
+type GameStartedPayload = Game
+
+type GameEndedPayload = Game
 
 type Event struct {
 	Type    EventType       `json:"type"`
@@ -104,6 +154,10 @@ func NewEvent(roomId string, payload interface{}) *Event {
 		eventType = JoinedRoomType
 		raw, _ = json.Marshal(payload.(*JoinedRoomPayload))
 
+	case *JoinedRoomRestrictedPayload:
+		eventType = JoinedRoomType
+		raw, _ = json.Marshal(payload.(*JoinedRoomRestrictedPayload))
+
 	case *LeftRoomPayload:
 		eventType = LeftRoomType
 		raw, _ = json.Marshal(payload.(*LeftRoomPayload))
@@ -125,12 +179,41 @@ func NewEvent(roomId string, payload interface{}) *Event {
 		raw, _ = json.Marshal(payload.(*UserChangedNamePayload))
 
 	case *UserTookSeatPayload:
-		eventType = UserTookSeat
+		eventType = UserTookSeatType
 		raw, _ = json.Marshal(payload.(*UserTookSeatPayload))
 
 	case *UserStartedSpectatingPayload:
-		eventType = UserStartedSpectating
+		eventType = UserStartedSpectatingType
 		raw, _ = json.Marshal(payload.(*UserStartedSpectatingPayload))
+
+	case *UserPromotedPayload:
+		eventType = UserPromotedType
+		raw, _ = json.Marshal(payload.(*UserPromotedPayload))
+
+	case *UserKickedPayload:
+		eventType = UserKickedType
+		raw, _ = json.Marshal(payload.(*UserKickedPayload))
+
+	case *GameStartedPayload:
+		eventType = GameStartedType
+		raw, _ = json.Marshal(payload.(*GameStartedPayload))
+
+	case *GameStartedRestrictedPayload:
+		log.Printf("game started restricted payload")
+		eventType = GameStartedType
+		raw, _ = json.Marshal(payload.(*GameStartedRestrictedPayload))
+
+	case *OrderAddedPayload:
+		eventType = OrderAddedType
+		raw, _ = json.Marshal(payload.(*OrderAddedPayload))
+
+	case *OrderTradedPayload:
+		eventType = OrderTradedType
+		raw, _ = json.Marshal(payload.(*OrderTradedPayload))
+
+	case *OrderRejectedPayload:
+		eventType = OrderRejectedType
+		raw, _ = json.Marshal(payload.(*OrderRejectedPayload))
 
 	default:
 		log.Printf("invalid payload")

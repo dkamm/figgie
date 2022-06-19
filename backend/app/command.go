@@ -15,6 +15,11 @@ const (
 	TakeSeatType                    = "takeSeat"
 	StartSpectatingType             = "startSpectating"
 	ChangeNameType                  = "changeName"
+	RebuyInType                     = "rebuyIn"
+	SendOrderType                   = "sendOrder"
+	StartGameType                   = "startGame"
+	PromoteUserType                 = "promoteUser"
+	KickUserType                    = "kickUser"
 )
 
 type CreateRoomPayload struct {
@@ -43,6 +48,22 @@ type StartSpectatingPayload struct{}
 
 type ChangeNamePayload struct {
 	Name string `json:"name"`
+}
+
+type RebuyInPayload struct{}
+
+type SendOrderPayload struct {
+	Price int  `json:"price"`
+	Suit  Suit `json:"suit"`
+	Side  Side `json:"side"`
+}
+
+type PromoteUserPayload struct {
+	UserId string `json:"userId"`
+}
+
+type KickUserPayload struct {
+	UserId string `json:"userId"`
 }
 
 type Command struct {

@@ -4,6 +4,7 @@ type Room struct {
 	id     string
 	config RoomConfig
 	users  map[string]*User
+	game   *Game
 }
 
 func NewRoom(id string, config RoomConfig) *Room {

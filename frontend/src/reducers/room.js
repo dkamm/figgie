@@ -8,6 +8,7 @@ export const initialState = {
   seats: [],
   spectators: [],
   config: null,
+  game: null,
 };
 
 export const roomReducer = (state = {}, { type, payload }) => {
@@ -27,6 +28,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
         users,
         seats: payload.seats,
         spectators: payload.spectators,
+        game: payload.game,
       };
     }
     case "leftRoom":
@@ -70,7 +72,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
         // User was spectating
         const spectatorSeat = spectators.findIndex((s) => s === payload.userId);
         spectators = [
-          spectators.slice(0, spectatorSeat),
+          ...spectators.slice(0, spectatorSeat),
           ...spectators.slice(spectatorSeat + 1),
           "",
         ];
@@ -152,6 +154,69 @@ export const roomReducer = (state = {}, { type, payload }) => {
         ...state,
         seats,
         spectators,
+      };
+    }
+    case "userPromoted": {
+      const adminId = state.users.allIds.filter((id) => {
+        return state.users.byId[id].admin;
+      });
+      return {
+        ...state,
+        users: {
+          ...state.users,
+          byId: {
+            ...state.users.byId,
+            [payload.userId]: {
+              ...state.users.byId[payload.userId],
+              admin: true,
+            },
+            [adminId]: {
+              ...state.users.byId[adminId],
+              admin: false,
+            },
+          },
+        },
+        activityEvents: [...state.activityEvents, { type, payload }],
+      };
+    }
+    case "userKicked": {
+      let seats = [...state.seats];
+      let spectators = [...state.spectators];
+      const seat = state.seats.findIndex((s) => s === payload.userId);
+      if (seat !== -1) {
+        // User was in a seat
+        seats[seat] = "";
+      } else {
+        // User was spectating
+        const spectatorSeat = spectators.findIndex((s) => s === payload.userId);
+        spectators = [
+          ...spectators.slice(0, spectatorSeat),
+          ...spectators.slice(spectatorSeat + 1),
+          "",
+        ];
+      }
+      return {
+        ...state,
+        users: {
+          ...state.users,
+          byId: {
+            ...state.users.byId,
+            [payload.userId]: {
+              ...state.users.byId[payload.userId],
+              left: true,
+            },
+          },
+        },
+        seats,
+        spectators,
+        activityEvents: [...state.activityEvents, { type, payload }],
+      };
+    }
+    case "gameStarted": {
+      return {
+        ...state,
+        game: payload,
+        activityEvents: [...state.activityEvents, { type, payload }],
       };
     }
     default:

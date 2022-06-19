@@ -21,7 +21,15 @@ const EmptySeat = ({ seat, takeSeat }) => {
   );
 };
 
-const SeatedUser = ({ user, isUser, isAdmin, changeName, isSpectating }) => {
+const SeatedUser = ({
+  user,
+  isUser,
+  isAdmin,
+  changeName,
+  promoteUser,
+  kickUser,
+  isSpectating,
+}) => {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user.name);
 
@@ -60,8 +68,27 @@ const SeatedUser = ({ user, isUser, isAdmin, changeName, isSpectating }) => {
           </div>
         )}
       </td>
-      <td className="text-left">{user.score}</td>
-      <td>{isAdmin && <button>Actions</button>}</td>
+      <td className="text-left">{user.money}</td>
+      <td>
+        {isAdmin && (
+          <>
+            <button
+              onClick={() => {
+                promoteUser(user.id);
+              }}
+            >
+              Promote
+            </button>
+            <button
+              onClick={() => {
+                kickUser(user.id);
+              }}
+            >
+              Kick
+            </button>
+          </>
+        )}
+      </td>
     </tr>
   );
 };
@@ -73,6 +100,8 @@ export const Seats = ({
   users,
   takeSeat,
   changeName,
+  promoteUser,
+  kickUser,
   isAdmin,
 }) => {
   return (
@@ -81,7 +110,7 @@ export const Seats = ({
         <tr>
           <th></th>
           <th className="text-left">User</th>
-          <th className="text-left">Score</th>
+          <th className="text-left">Money</th>
           <th></th>
         </tr>
       </thead>
@@ -97,7 +126,9 @@ export const Seats = ({
                 isUser={user.id === userId}
                 isAdmin={isAdmin}
                 changeName={changeName}
-                isSpectating={i >= 4}
+                isSpectating={false}
+                promoteUser={promoteUser}
+                kickUser={kickUser}
               />
             );
           }
@@ -106,6 +137,7 @@ export const Seats = ({
         {spectators
           .filter((s) => s)
           .map((spectator, i) => {
+            console.log("spectator", spectator);
             const user = users.byId[spectator];
             return (
               <SeatedUser
@@ -115,6 +147,8 @@ export const Seats = ({
                 isAdmin={isAdmin}
                 changeName={changeName}
                 isSpectating={true}
+                promoteUser={promoteUser}
+                kickUser={kickUser}
               />
             );
           })}

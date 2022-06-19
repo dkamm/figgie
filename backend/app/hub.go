@@ -49,6 +49,32 @@ func (h *Hub) sendToUserClientsInRoom(roomId string, userId string, message []by
 	h.sendToUsersClientsInRoom(roomId, []string{userId}, message)
 }
 
+func (h *Hub) pickNewAdmin(room *Room) {
+	var nextAdmin *User
+	for _, seat := range room.seats() {
+		if seat != "" {
+			nextAdmin = room.users[seat]
+			break
+		}
+	}
+	if nextAdmin == nil {
+		for _, spectator := range room.spectators() {
+			if spectator != "" {
+				nextAdmin = room.users[spectator]
+				break
+			}
+		}
+	}
+	if nextAdmin == nil {
+		return
+	}
+	nextAdmin.Admin = true
+
+	event := NewEvent(room.id, &UserPromotedPayload{UserId: nextAdmin.Id})
+	message, _ := json.Marshal(event)
+	h.sendToUsersClientsInRoom(room.id, room.activeUserIds(), message)
+}
+
 func (h *Hub) Run() {
 
 	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10})
@@ -285,6 +311,11 @@ func (h *Hub) Run() {
 				message, _ = json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, otherUserIds, message)
 
+				if user.Admin {
+					// Promote another user to be admin if the admin left
+					h.pickNewAdmin(room)
+				}
+
 			case SendMessageType:
 				room, ok := h.rooms[c.RoomId]
 				if !ok {
@@ -297,13 +328,31 @@ func (h *Hub) Run() {
 					Message: p.Message,
 				})
 				message, _ := json.Marshal(event)
-				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
+				user, ok := room.users[m.client.userId]
+				if !ok {
+					continue
+				}
+
+				if room.game != nil && !room.game.Done && user.Seat == -1 {
+					// Only send to spectators if game is in progress and user is spectator
+					h.sendToUsersClientsInRoom(c.RoomId, room.spectators(), message)
+				} else {
+					// Send to everyone otherwise
+					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+				}
 
 			case TakeSeatType:
 				room, ok := h.rooms[c.RoomId]
 				if !ok {
 					continue
 				}
+
+				if room.game != nil && !room.game.Done {
+					// Can't take a seat while game is in progress
+					continue
+				}
+
 				p := &TakeSeatPayload{}
 				json.Unmarshal(c.Payload, p)
 				if p.Seat > 3 {
@@ -360,6 +409,13 @@ func (h *Hub) Run() {
 				if !ok {
 					continue
 				}
+
+				if room.game != nil && !room.game.Done {
+					log.Printf("cannot start spectating")
+					// Can't start spectating while game is in progress
+					continue
+				}
+
 				user, ok := room.users[m.client.userId]
 				spectators := room.spectators()
 				spectatorSeat := room.getNextIndex(spectators)
@@ -376,6 +432,152 @@ func (h *Hub) Run() {
 
 				message, _ := json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
+			case StartGameType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+
+				id := 1
+				if room.game != nil {
+					id = room.game.Id + 1
+				}
+				g := NewGame(
+					id,
+					room.seats(),
+					room.users,
+				)
+				room.game = g
+
+				g.Start()
+
+				// Send restricted view of game to each player
+				for _, player := range g.Players {
+					rv := g.restrictedView(player)
+					payload := GameStartedRestrictedPayload(*rv)
+					event := NewEvent(c.RoomId, &payload)
+					message, _ := json.Marshal(event)
+					h.sendToUserClientsInRoom(c.RoomId, player, message)
+				}
+
+				// Send full game to spectators
+				payload := GameStartedPayload(*g)
+				event := NewEvent(c.RoomId, &payload)
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.spectators(), message)
+
+			case SendOrderType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+
+				p := &SendOrderPayload{}
+				json.Unmarshal(c.Payload, p)
+
+				g := room.game
+
+				player, ok := g.findPlayer(m.client.userId)
+
+				if !ok {
+					continue
+				}
+
+				resp := g.HandleOrder(player, p.Price, p.Suit, p.Side)
+
+				switch resp.Type {
+				case Added:
+					event := NewEvent(c.RoomId, &OrderAddedPayload{
+						Player: player,
+						Price:  p.Price,
+						Suit:   p.Suit,
+						Side:   p.Side,
+					})
+					message, _ := json.Marshal(event)
+					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+				case Traded:
+					event := NewEvent(c.RoomId, &OrderTradedPayload{
+						Player:        player,
+						RestingPlayer: resp.restingPlayer,
+						Suit:          p.Suit,
+						Price:         p.Price,
+					})
+					message, _ := json.Marshal(event)
+					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+				case Rejected:
+					event := NewEvent(c.RoomId, &OrderRejectedPayload{
+						Reason: resp.rejectReason,
+					})
+					message, _ := json.Marshal(event)
+					h.sendToUserClientsInRoom(c.RoomId, m.client.userId, message)
+				}
+
+			case PromoteUserType:
+
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+
+				user, ok := room.users[m.client.userId]
+
+				if !user.Admin {
+					continue
+				}
+
+				p := &PromoteUserPayload{}
+				json.Unmarshal(c.Payload, p)
+
+				nextAdmin, ok := room.users[p.UserId]
+
+				if !ok {
+					continue
+				}
+
+				if nextAdmin.Left {
+					continue
+				}
+
+				user.Admin = false
+				nextAdmin.Admin = true
+
+				event := NewEvent(c.RoomId, &UserPromotedPayload{UserId: nextAdmin.Id})
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
+			case KickUserType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+
+				user, ok := room.users[m.client.userId]
+
+				if !user.Admin {
+					continue
+				}
+
+				p := &KickUserPayload{}
+				json.Unmarshal(c.Payload, p)
+
+				targetUser, ok := room.users[p.UserId]
+
+				if !ok {
+					continue
+				}
+
+				if targetUser.Admin {
+					// Admin can't kick himself
+					continue
+				}
+
+				targetUser.Left = true
+
+				event := NewEvent(c.RoomId, &UserKickedPayload{UserId: p.UserId})
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
 			}
 
 		case <-h.ticker.C:
@@ -392,6 +594,12 @@ func (h *Hub) Run() {
 						event := NewEvent(room.id, &UserLeftPayload{UserId: user.Id})
 						message, _ := json.Marshal(event)
 						h.sendToUsersClientsInRoom(room.id, otherUserIds, message)
+
+						if user.Admin {
+							// Promote new user as admin if user was admin
+							user.Admin = false
+							h.pickNewAdmin(room)
+						}
 					}
 				}
 			}

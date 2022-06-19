@@ -10,7 +10,8 @@ import (
 type User struct {
 	Id             string    `json:"id"`
 	Name           string    `json:"name"`
-	Score          int       `json:"score"`
+	Money          int       `json:"money"`
+	Rebuys         int       `json:"rebuys"`
 	Seat           int       `json:"-"` // -1 if not seated
 	SpectatorSeat  int       `json:"-"` // -1 if not spectating
 	Admin          bool      `json:"admin"`
