@@ -39,6 +39,7 @@ type GameRestrictedView struct {
 	Done      bool      `json:"done"`
 	Players   []string  `json:"players"`
 	Hands     [][]int   `json:"hands"`
+	Deltas    []int     `json:"deltas"`
 	Books     []Book    `json:"books"`
 	StartedAt time.Time `json:"startedAt"`
 }
@@ -57,6 +58,7 @@ func (g *Game) restrictedView(userId string) *GameRestrictedView {
 		Done:      g.Done,
 		Players:   g.Players,
 		Hands:     hands,
+		Deltas:    g.Deltas,
 		Books:     g.Books,
 		StartedAt: g.StartedAt,
 	}
@@ -180,7 +182,7 @@ func (g *Game) HandleOrder(player int, price int, suit Suit, side Side) HandleOr
 	}
 
 	if side == Bid {
-		if price >= askPrice {
+		if askPrice != 0 && price >= askPrice {
 			if player == askPlayer {
 				return HandleOrderResponse{
 					Type:         Rejected,
@@ -219,7 +221,7 @@ func (g *Game) HandleOrder(player int, price int, suit Suit, side Side) HandleOr
 		}
 
 	} else {
-		if price <= bidPrice {
+		if bidPrice != 0 && price <= bidPrice {
 			if player == bidPlayer {
 				return HandleOrderResponse{
 					Type:         Rejected,
@@ -249,8 +251,8 @@ func (g *Game) HandleOrder(player int, price int, suit Suit, side Side) HandleOr
 				}
 			}
 
-			book[3] = price
-			book[4] = player
+			book[2] = price
+			book[3] = player
 			return HandleOrderResponse{
 				Type: Added,
 			}

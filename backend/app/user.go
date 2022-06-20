@@ -26,6 +26,6 @@ func RandomUserName() string {
 	return strings.Title(adjectives[rand.Intn(len(adjectives))]) + " " + strings.Title(animals[rand.Intn(len(animals))])
 }
 
-func NewUser(id string, name string, seat int, spectatorSeat int, admin bool) *User {
-	return &User{Id: id, Name: name, Seat: seat, SpectatorSeat: spectatorSeat, Admin: admin}
+func NewUser(id string, name string, money int, seat int, spectatorSeat int, admin bool) *User {
+	return &User{Id: id, Name: name, Money: money, Seat: seat, SpectatorSeat: spectatorSeat, Admin: admin}
 }

@@ -5,8 +5,8 @@ type Suit int
 const (
 	Club Suit = iota
 	Spade
-	Diamond
 	Heart
+	Diamond
 )
 
 func SisterSuit(s Suit) Suit {

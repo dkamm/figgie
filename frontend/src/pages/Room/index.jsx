@@ -2,11 +2,19 @@ import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useWSClient } from "contexts/WSContext";
 import { Avatar } from "components/Avatar";
+import { Suit } from "components/Suit";
 import { roomReducer, initialState } from "reducers/room";
 import { ActivityLog } from "pages/Room/ActivityLog";
 import { Input } from "pages/Room/Input";
 import { Seats } from "pages/Room/Seats";
-import { SUIT_EMOJIS } from "constants";
+import { SUITS } from "constants";
+
+const CHAR2SUIT = {
+  c: 0,
+  s: 1,
+  h: 2,
+  d: 3,
+};
 
 export const Room = () => {
   const { roomId } = useParams();
@@ -89,6 +97,13 @@ export const Room = () => {
     [send]
   );
 
+  const sendOrder = useCallback(
+    (price, suit, side) => {
+      send("sendOrder", { price, suit, side });
+    },
+    [send]
+  );
+
   const changeName = useCallback(
     (name) => {
       send("changeName", { name });
@@ -143,10 +158,24 @@ export const Room = () => {
     [sendMessage]
   );
 
+  const onInputSubmitGame = useCallback(
+    (message) => {
+      const tokens = message.split(" ");
+
+      const suit = CHAR2SUIT[tokens[0][0]];
+      const side = tokens[1][0] === "b" ? 0 : 1;
+      const price = parseInt(tokens[2]);
+
+      sendOrder(price, suit, side);
+    },
+    [sendOrder]
+  );
+
   const isAdmin = userId && users.byId[userId].admin;
   const isSpectating = userId && spectators.find((s) => s === userId);
   const playerId =
     userId && game && game.players.findIndex((p) => p === userId);
+  const isPlaying = playerId !== -1;
   const inGame = game && !game.done;
 
   console.log("inGame", inGame);
@@ -169,14 +198,14 @@ export const Room = () => {
         <>
           <div className="row-span-full col-start-1 col-end-3">
             {inGame && (
-              <table className="table-auto w-full">
+              <table className="table-fixed w-full">
                 <thead>
                   <tr>
-                    <th className="">Suit</th>
-                    <th className="">Bidder</th>
-                    <th className="">Bid</th>
-                    <th className="">Ask</th>
-                    <th className="">Asker</th>
+                    <th className="text-left">Suit</th>
+                    <th className="text-left">Bidder</th>
+                    <th className="text-left">Bid</th>
+                    <th className="text-left">Ask</th>
+                    <th className="text-left">Asker</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -186,25 +215,21 @@ export const Room = () => {
                     const ask = book[2];
                     const asker = book[3];
 
-                    const bidUser = bid && users.byId[bidder];
-                    const askUser = ask && users.byId[asker];
+                    const bidUser = bid && users.byId[game.players[bidder]];
+                    const askUser = ask && users.byId[game.players[asker]];
 
                     return (
                       <tr key={suit}>
-                        <td className="">
-                          <div
-                            className={suit < 2 ? "text-black" : "text-red-400"}
-                          >
-                            {SUIT_EMOJIS[suit]}
-                          </div>
+                        <td className="text-left">
+                          <Suit suit={suit} />
                         </td>
                         <td className="">
-                          {bidUser ? <Avatar user={bidder} /> : null}
+                          {bidUser ? <Avatar user={bidUser} /> : null}
                         </td>
                         <td className="">{bid || null}</td>
                         <td className="">{ask || null}</td>
                         <td className="">
-                          {askUser ? <Avatar user={asker} /> : null}
+                          {askUser ? <Avatar user={askUser} /> : null}
                         </td>
                       </tr>
                     );
@@ -213,22 +238,63 @@ export const Room = () => {
               </table>
             )}
             {inGame && playerId !== -1 && (
-              <table className="table-auto w-full">
+              <table className="table-fixed w-full">
                 <thead>
                   <tr>
-                    <th className="text-black">♣️</th>
-                    <th className="text-black">♠️</th>
-                    <th className="text-red-400">♥️</th>
-                    <th className="text-red-400">♦️</th>
+                    {SUITS.map((suit) => (
+                      <th className="text-left" key={suit}>
+                        <Suit suit={suit} />
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>{game.hands[playerId][0]}</td>
-                    <td>{game.hands[playerId][1]}</td>
-                    <td>{game.hands[playerId][2]}</td>
-                    <td>{game.hands[playerId][3]}</td>
+                    {SUITS.map((suit) => (
+                      <td className="text-left" key={suit}>
+                        {game.hands[playerId][suit]}
+                      </td>
+                    ))}
                   </tr>
+                </tbody>
+              </table>
+            )}
+            {inGame && playerId === -1 && (
+              <table className="table-fixed w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">Player</th>
+                    {SUITS.map((suit) => (
+                      <th className="text-left" key={suit}>
+                        <Suit suit={suit} />
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {game.players.map((userId, playerId) => {
+                    if (!userId) return;
+                    console.log(
+                      "userId",
+                      userId,
+                      "playerId",
+                      playerId,
+                      "hands",
+                      game.hands
+                    );
+                    return (
+                      <tr key={playerId}>
+                        <td className="text-left">
+                          <Avatar user={users.byId[userId]} />
+                        </td>
+                        {SUITS.map((suit) => (
+                          <td className="text-left" key={suit}>
+                            {game.hands[playerId][suit]}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -260,7 +326,11 @@ export const Room = () => {
               <div className="flex-grow overflow-scroll">
                 <ActivityLog users={users} activityEvents={activityEvents} />
               </div>
-              <Input onSubmit={onInputSubmit} />
+              <Input
+                onSubmit={
+                  inGame && isPlaying ? onInputSubmitGame : onInputSubmit
+                }
+              />
             </div>
           </div>
         </>

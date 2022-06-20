@@ -100,11 +100,11 @@ type OrderAddedPayload struct {
 }
 
 type OrderTradedPayload struct {
-	Player        int  `json:"player"`
-	RestingPlayer int  `json:"restingPlayer"`
-	Price         int  `json:"price"`
-	Suit          Suit `json:"suit"`
-	Side          Side `json:"side"`
+	Bidder int  `json:"bidder"`
+	Asker  int  `json:"asker"`
+	Price  int  `json:"price"`
+	Suit   Suit `json:"suit"`
+	Side   Side `json:"side"`
 }
 
 type OrderRejectedPayload struct {

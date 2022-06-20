@@ -191,7 +191,7 @@ func (h *Hub) Run() {
 				id := "room_" + uuid.New().String()
 				room := NewRoom(id, p.Config)
 				h.rooms[id] = room
-				user := NewUser(m.client.userId, p.UserName, 0, -1, true)
+				user := NewUser(m.client.userId, p.UserName, 1000, 0, -1, true)
 				room.users[m.client.userId] = user
 
 				m.client.roomId = room.id
@@ -241,6 +241,7 @@ func (h *Hub) Run() {
 					user = NewUser(
 						m.client.userId,
 						name,
+						1000,
 						seat,
 						spectatorSeat,
 						len(activeUsers) == 0,
@@ -497,11 +498,20 @@ func (h *Hub) Run() {
 					message, _ := json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 				case Traded:
+					var bidder, asker int
+					if p.Side == 0 {
+						bidder = player
+						asker = resp.restingPlayer
+					} else {
+						bidder = resp.restingPlayer
+						asker = player
+					}
 					event := NewEvent(c.RoomId, &OrderTradedPayload{
-						Player:        player,
-						RestingPlayer: resp.restingPlayer,
-						Suit:          p.Suit,
-						Price:         p.Price,
+						Bidder: bidder,
+						Asker:  asker,
+						Side:   p.Side,
+						Suit:   p.Suit,
+						Price:  p.Price,
 					})
 					message, _ := json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)

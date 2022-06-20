@@ -219,6 +219,88 @@ export const roomReducer = (state = {}, { type, payload }) => {
         activityEvents: [...state.activityEvents, { type, payload }],
       };
     }
+    case "orderAdded": {
+      const books = state.game.books.map((b, i) => {
+        if (i !== payload.suit) {
+          return b;
+        }
+
+        let nb = [...b];
+        if (!payload.side) {
+          nb[0] = payload.price;
+          nb[1] = payload.player;
+        } else {
+          nb[2] = payload.price;
+          nb[3] = payload.player;
+        }
+        return nb;
+      });
+
+      return {
+        ...state,
+        game: {
+          ...state.game,
+          books: books,
+        },
+      };
+    }
+    case "orderTraded": {
+      const bidder = payload.bidder;
+      const asker = payload.asker;
+
+      const bidUser = state.users.byId[state.game.players[bidder]];
+      const askUser = state.users.byId[state.game.players[asker]];
+
+      let hands = state.game.hands.map((h) => {
+        return [...h];
+      });
+      hands[bidder][payload.suit] += 1;
+      hands[asker][payload.suit] -= 1;
+
+      let deltas = [...state.game.deltas];
+      deltas[bidder] -= payload.price;
+      deltas[asker] += payload.price;
+
+      return {
+        ...state,
+        users: {
+          ...state.users,
+          byId: {
+            ...state.users.byId,
+            [bidUser.id]: {
+              ...bidUser,
+              money: bidUser.money - payload.price,
+            },
+            [askUser.id]: {
+              ...askUser,
+              money: askUser.money + payload.price,
+            },
+          },
+        },
+        game: {
+          ...state.game,
+          hands,
+          deltas,
+          books: [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+          ],
+        },
+        activityEvents: [
+          ...state.activityEvents,
+          {
+            type,
+            payload: {
+              ...payload,
+              bidUserId: bidUser.id,
+              askUserId: askUser.id,
+            },
+          },
+        ],
+      };
+    }
     default:
       return state;
   }
