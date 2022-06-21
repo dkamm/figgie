@@ -21,6 +21,7 @@ const (
 	PromoteUserType                 = "promoteUser"
 	KickUserType                    = "kickUser"
 	EndGameType                     = "endGame"
+	PingType                        = "ping"
 )
 
 type CreateRoomPayload struct {

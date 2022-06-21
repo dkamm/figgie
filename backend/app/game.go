@@ -91,7 +91,7 @@ func NewGame(id int, players []string, users map[string]*User) *Game {
 }
 
 func (g *Game) Start() {
-	g.StartedAt = time.Now()
+	g.StartedAt = time.Now().UTC()
 
 	// TODO deal hand
 	g.Hands = [][]int{

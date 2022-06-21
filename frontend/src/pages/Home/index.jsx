@@ -26,8 +26,7 @@ export const Home = () => {
   }, [wsclient]);
 
   const handler = useCallback(
-    (event) => {
-      const message = JSON.parse(event.data);
+    (message) => {
       const { type, roomId } = message;
       if (type === "roomCreated") {
         nav(`/rooms/${roomId}`);

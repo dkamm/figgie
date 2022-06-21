@@ -27,6 +27,7 @@ const (
 	OrderAddedType                      = "orderAdded"
 	OrderTradedType                     = "orderTraded"
 	OrderRejectedType                   = "orderRejected"
+	PongType                            = "pong"
 )
 
 type RoomCreatedPayload struct{}
@@ -121,6 +122,10 @@ type GameEndedPayload struct {
 	Bonuses   []int `json:"bonuses"`
 	GoalSuit  Suit  `json:"goalSuit"`
 	GoalCount int   `json:"goalCount"`
+}
+
+type PongPayload struct {
+	Time int64 `json:"time"`
 }
 
 type Event struct {
@@ -223,6 +228,10 @@ func NewEvent(roomId string, payload interface{}) *Event {
 	case *OrderRejectedPayload:
 		eventType = OrderRejectedType
 		raw, _ = json.Marshal(payload.(*OrderRejectedPayload))
+
+	case *PongPayload:
+		eventType = PongType
+		raw, _ = json.Marshal(payload.(*PongPayload))
 
 	default:
 		log.Printf("invalid payload")

@@ -7,6 +7,7 @@ import { roomReducer, initialState } from "reducers/room";
 import { ActivityLog } from "pages/Room/ActivityLog";
 import { Input } from "pages/Room/Input";
 import { Seats } from "pages/Room/Seats";
+import { Timer } from "pages/Room/Timer";
 import { SUITS } from "constants";
 
 const CHAR2SUIT = {
@@ -28,8 +29,10 @@ export const Room = () => {
   const [loading, setLoading] = useState(true);
   const [failure, setFailure] = useState(null);
 
-  const [{ userId, users, activityEvents, seats, spectators, game }, dispatch] =
-    useReducer(roomReducer, initialState);
+  const [
+    { userId, users, activityEvents, seats, spectators, game, config },
+    dispatch,
+  ] = useReducer(roomReducer, initialState);
 
   const send = useCallback(
     (type, payload) => {
@@ -43,9 +46,7 @@ export const Room = () => {
   );
 
   const handler = useCallback(
-    (event) => {
-      const message = JSON.parse(event.data);
-
+    (message) => {
       const { type, payload } = message;
 
       switch (type) {
@@ -193,6 +194,13 @@ export const Room = () => {
       {!loading && !failure && (
         <>
           <div className="row-span-full col-start-1 col-end-3">
+            {inGame && (
+              <Timer
+                serverTime={Date.parse(game.startedAt)}
+                duration={config.gameTime}
+              />
+            )}
+            {!inGame && game && <div>0:00</div>}
             {!inGame && game && (
               <table className="table-fixed w-full">
                 <thead>

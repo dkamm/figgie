@@ -24,11 +24,8 @@ export const roomReducer = (state = {}, { type, payload }) => {
       }
       return {
         ...state,
-        userId: payload.userId,
+        ...payload,
         users,
-        seats: payload.seats,
-        spectators: payload.spectators,
-        game: payload.game,
       };
     }
     case "leftRoom":

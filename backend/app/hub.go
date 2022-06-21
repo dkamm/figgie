@@ -641,6 +641,11 @@ func (h *Hub) Run() {
 				event := NewEvent(c.RoomId, &UserKickedPayload{UserId: p.UserId})
 				message, _ := json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
+			case PingType:
+				event := NewEvent(c.RoomId, &PongPayload{Time: time.Now().Unix() * 1000})
+				message, _ := json.Marshal(event)
+				m.client.send <- message
 			}
 
 		case <-h.ticker.C:
