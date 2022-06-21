@@ -137,7 +137,6 @@ export const Seats = ({
         {spectators
           .filter((s) => s)
           .map((spectator, i) => {
-            console.log("spectator", spectator);
             const user = users.byId[spectator];
             return (
               <SeatedUser

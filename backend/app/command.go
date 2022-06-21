@@ -20,6 +20,7 @@ const (
 	StartGameType                   = "startGame"
 	PromoteUserType                 = "promoteUser"
 	KickUserType                    = "kickUser"
+	EndGameType                     = "endGame"
 )
 
 type CreateRoomPayload struct {
@@ -64,6 +65,10 @@ type PromoteUserPayload struct {
 
 type KickUserPayload struct {
 	UserId string `json:"userId"`
+}
+
+type EndGamePayload struct {
+	GameId int `json:"id"`
 }
 
 type Command struct {

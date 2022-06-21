@@ -62,6 +62,10 @@ const GameStarted = ({ payload }) => {
   return <div>Game {payload.id} started!</div>;
 };
 
+const GameEnded = ({ payload }) => {
+  return <div>Game {payload.id} ended!</div>;
+};
+
 const OrderTraded = ({ users, payload }) => {
   const bidUser = users.byId[payload.bidUserId];
   const askUser = users.byId[payload.askUserId];
@@ -106,6 +110,9 @@ export const ActivityEvent = ({ users, activityEvent }) => {
 
     case "gameStarted":
       return <GameStarted payload={payload} />;
+
+    case "gameEnded":
+      return <GameEnded payload={payload} />;
 
     case "orderTraded":
       return <OrderTraded users={users} payload={payload} />;

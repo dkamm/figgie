@@ -77,7 +77,7 @@ func (h *Hub) pickNewAdmin(room *Room) {
 
 func (h *Hub) Run() {
 
-	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10})
+	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10, GameTime: 3})
 
 	for {
 		select {
@@ -444,14 +444,44 @@ func (h *Hub) Run() {
 				if room.game != nil {
 					id = room.game.Id + 1
 				}
+				// In practice, seats will not contain any empty strings but it's easier for testing
+				players := make([]string, 0, len(room.seats()))
+				for _, userId := range room.seats() {
+					if userId != "" {
+						players = append(players, userId)
+					}
+				}
 				g := NewGame(
 					id,
-					room.seats(),
+					players,
 					room.users,
 				)
 				room.game = g
 
 				g.Start()
+
+				end := time.NewTimer(time.Duration(room.config.GameTime) * time.Second)
+
+				// Send end game command after time is up
+				go func() {
+					<-end.C
+
+					payload, _ := json.Marshal(&EndGamePayload{GameId: g.Id})
+					command := &Command{RoomId: c.RoomId, Type: EndGameType, Payload: payload}
+
+					message, _ := json.Marshal(command)
+
+					// TODO: revisit this when implementing bots
+					client := &WSClient{
+						userId: "",
+						roomId: c.RoomId,
+					}
+
+					h.receive <- WSClientMessage{
+						message: message,
+						client:  client,
+					}
+				}()
 
 				// Send restricted view of game to each player
 				for _, player := range g.Players {
@@ -467,6 +497,30 @@ func (h *Hub) Run() {
 				event := NewEvent(c.RoomId, &payload)
 				message, _ := json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, room.spectators(), message)
+
+			case EndGameType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+				p := &EndGamePayload{}
+				json.Unmarshal(c.Payload, p)
+				g := room.game
+				if g == nil || g.Id != p.GameId {
+					continue
+				}
+				g.End()
+
+				// Send full game results to everyone
+				event := NewEvent(c.RoomId, &GameEndedPayload{
+					Id:        g.Id,
+					Earnings:  g.Earnings,
+					Bonuses:   g.Bonuses,
+					GoalSuit:  g.GoalSuit,
+					GoalCount: g.GoalCount,
+				})
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 
 			case SendOrderType:
 				room, ok := h.rooms[c.RoomId]
@@ -587,7 +641,6 @@ func (h *Hub) Run() {
 				event := NewEvent(c.RoomId, &UserKickedPayload{UserId: p.UserId})
 				message, _ := json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
-
 			}
 
 		case <-h.ticker.C:

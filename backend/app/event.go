@@ -115,7 +115,13 @@ type GameStartedRestrictedPayload = GameRestrictedView
 
 type GameStartedPayload = Game
 
-type GameEndedPayload = Game
+type GameEndedPayload struct {
+	Id        int   `json:"id"`
+	Earnings  []int `json:"earnings"`
+	Bonuses   []int `json:"bonuses"`
+	GoalSuit  Suit  `json:"goalSuit"`
+	GoalCount int   `json:"goalCount"`
+}
 
 type Event struct {
 	Type    EventType       `json:"type"`
@@ -199,9 +205,12 @@ func NewEvent(roomId string, payload interface{}) *Event {
 		raw, _ = json.Marshal(payload.(*GameStartedPayload))
 
 	case *GameStartedRestrictedPayload:
-		log.Printf("game started restricted payload")
 		eventType = GameStartedType
 		raw, _ = json.Marshal(payload.(*GameStartedRestrictedPayload))
+
+	case *GameEndedPayload:
+		eventType = GameEndedType
+		raw, _ = json.Marshal(payload.(*GameEndedPayload))
 
 	case *OrderAddedPayload:
 		eventType = OrderAddedType

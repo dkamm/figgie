@@ -178,10 +178,6 @@ export const Room = () => {
   const isPlaying = playerId !== -1;
   const inGame = game && !game.done;
 
-  console.log("inGame", inGame);
-  console.log("playerId", playerId);
-  console.log("game", game);
-
   return (
     <div className="grid grid-cols-4 grid-rows-4 h-screen">
       {loading && (
@@ -197,6 +193,41 @@ export const Room = () => {
       {!loading && !failure && (
         <>
           <div className="row-span-full col-start-1 col-end-3">
+            {!inGame && game && (
+              <table className="table-fixed w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">Player</th>
+                    {SUITS.map((s) => (
+                      <th className="text-left" key={s}>
+                        <Suit suit={s} />
+                      </th>
+                    ))}
+                    <th className="text-left">Earnings</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {game.players.map((userId, i) => {
+                    const user = users.byId[userId];
+                    const hand = game.hands[i];
+
+                    return (
+                      <tr key={i}>
+                        <td className="text-left">
+                          <Avatar user={user} />
+                        </td>
+                        {hand.map((c, i) => (
+                          <td className="text-left" key={i}>
+                            {c}
+                          </td>
+                        ))}
+                        <td className="text-left">{game.earnings[i]}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
             {inGame && (
               <table className="table-fixed w-full">
                 <thead>
@@ -273,15 +304,6 @@ export const Room = () => {
                 </thead>
                 <tbody>
                   {game.players.map((userId, playerId) => {
-                    if (!userId) return;
-                    console.log(
-                      "userId",
-                      userId,
-                      "playerId",
-                      playerId,
-                      "hands",
-                      game.hands
-                    );
                     return (
                       <tr key={playerId}>
                         <td className="text-left">
@@ -299,7 +321,7 @@ export const Room = () => {
               </table>
             )}
           </div>
-          <div className="row-span-full col-start-3 col-end-4">
+          <div className="row-span-full col-start-3 col-span-2">
             {isAdmin && !inGame && (
               <button onClick={startGame}>New Game</button>
             )}

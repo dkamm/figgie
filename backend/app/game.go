@@ -26,7 +26,7 @@ type Game struct {
 	Players   []string         `json:"players"`
 	users     map[string]*User `json:"-"`
 	Hands     [][]int          `json:"hands"`
-	Deltas    []int            `json:"deltas"`
+	Earnings  []int            `json:"earnings"`
 	Bonuses   []int            `json:"bonuses"`
 	Books     []Book           `json:"books"` // 0 - bidPrice, 1 - bidPlayer, 2 - askPrice, 3 - askPlayer
 	GoalSuit  Suit             `json:"goalSuit"`
@@ -39,50 +39,54 @@ type GameRestrictedView struct {
 	Done      bool      `json:"done"`
 	Players   []string  `json:"players"`
 	Hands     [][]int   `json:"hands"`
-	Deltas    []int     `json:"deltas"`
+	Earnings  []int     `json:"earnings"`
 	Books     []Book    `json:"books"`
 	StartedAt time.Time `json:"startedAt"`
 }
 
 func (g *Game) restrictedView(userId string) *GameRestrictedView {
-	player, _ := g.findPlayer(userId)
-	hands := [][]int{
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
-		{0, 0, 0, 0},
+	hands := make([][]int, len(g.Players))
+	for i, player := range g.Players {
+		if player == userId {
+			hands[i] = g.Hands[i]
+		} else {
+			hands[i] = []int{0, 0, 0, 0}
+		}
 	}
-	hands[player] = g.Hands[player]
 	return &GameRestrictedView{
 		Id:        g.Id,
 		Done:      g.Done,
 		Players:   g.Players,
 		Hands:     hands,
-		Deltas:    g.Deltas,
+		Earnings:  g.Earnings,
 		Books:     g.Books,
 		StartedAt: g.StartedAt,
 	}
 }
 
 func NewGame(id int, players []string, users map[string]*User) *Game {
+
+	hands := make([][]int, len(players))
+	earnings := make([]int, len(players))
+	bonuses := make([]int, len(players))
+	for i := 0; i < len(players); i++ {
+		hands = append(hands, []int{0, 0, 0, 0})
+	}
+
 	return &Game{
-		Id:   id,
-		Done: false,
-		Hands: [][]int{
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-			{0, 0, 0, 0},
-		},
+		Id:    id,
+		Done:  false,
+		Hands: hands,
 		Books: []Book{
 			{0, 0, 0, 0},
 			{0, 0, 0, 0},
 			{0, 0, 0, 0},
 			{0, 0, 0, 0},
 		},
-		Players: players,
-		users:   users,
-		Deltas:  []int{0, 0, 0, 0},
+		Players:  players,
+		users:    users,
+		Earnings: earnings,
+		Bonuses:  bonuses,
 	}
 }
 
@@ -91,22 +95,51 @@ func (g *Game) Start() {
 
 	// TODO deal hand
 	g.Hands = [][]int{
-		{3, 3, 3, 3},
-		{3, 3, 3, 3},
-		{3, 3, 3, 3},
-		{3, 3, 3, 3},
+		{3, 2, 1, 0},
+		{3, 2, 1, 0},
+		{0, 1, 2, 3},
+		{0, 1, 2, 3},
 	}
+	g.Hands = g.Hands[:len(g.Players)]
 	g.GoalSuit = Club
 	g.GoalCount = 8
 
 	for _, player := range g.Players {
-		if player == "" {
-			continue
-		}
 		user := g.users[player]
 		user.Money -= 50
 	}
-	g.Deltas = []int{-50, -50, -50, -50}
+	g.Earnings = []int{-50, -50, -50, -50}[:len(g.Players)]
+}
+
+func (g *Game) End() {
+	g.Done = true
+
+	// Determine top goal count
+	topGoals := 0
+	for _, hand := range g.Hands {
+		if hand[g.GoalSuit] > topGoals {
+			topGoals = hand[g.GoalSuit]
+		}
+	}
+
+	topGoalPlayers := make([]int, 0, len(g.Players))
+	for i, hand := range g.Hands {
+		if hand[g.GoalSuit] == topGoals {
+			topGoalPlayers = append(topGoalPlayers, i)
+		}
+	}
+
+	for i, hand := range g.Hands {
+		bonus := hand[g.GoalSuit] * 10
+		g.Earnings[i] += bonus
+		g.Bonuses[i] += bonus
+	}
+
+	bonus := (200 - g.GoalCount*10) / len(topGoalPlayers)
+	for _, player := range topGoalPlayers {
+		g.Earnings[player] += bonus
+		g.Bonuses[player] += bonus
+	}
 }
 
 func (g *Game) resetBooks() {
@@ -194,10 +227,10 @@ func (g *Game) HandleOrder(player int, price int, suit Suit, side Side) HandleOr
 				askHand := g.Hands[askPlayer]
 				askHand[suit]--
 				askUser.Money += askPrice
-				g.Deltas[askPlayer] += askPrice
+				g.Earnings[askPlayer] += askPrice
 				hand[suit]++
 				user.Money -= askPrice
-				g.Deltas[player] -= askPrice
+				g.Earnings[player] -= askPrice
 				return HandleOrderResponse{
 					Type:          Traded,
 					restingPlayer: askPlayer,
@@ -233,10 +266,10 @@ func (g *Game) HandleOrder(player int, price int, suit Suit, side Side) HandleOr
 				bidHand := g.Hands[bidPlayer]
 				bidHand[suit]++
 				bidUser.Money -= bidPrice
-				g.Deltas[bidPlayer] -= bidPrice
+				g.Earnings[bidPlayer] -= bidPrice
 				hand[suit]--
 				user.Money += bidPrice
-				g.Deltas[player] += bidPrice
+				g.Earnings[player] += bidPrice
 				return HandleOrderResponse{
 					Type:          Traded,
 					restingPlayer: bidPlayer,

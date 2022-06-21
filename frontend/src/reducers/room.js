@@ -213,9 +213,44 @@ export const roomReducer = (state = {}, { type, payload }) => {
       };
     }
     case "gameStarted": {
+      const users = {
+        ...state.users,
+        byId: { ...state.users.byId },
+      };
+      payload.players.forEach((userId, i) => {
+        const user = users.byId[userId];
+        users.byId[userId] = {
+          ...user,
+          money: user.money + payload.earnings[i],
+        };
+      });
       return {
         ...state,
+        users,
         game: payload,
+        activityEvents: [...state.activityEvents, { type, payload }],
+      };
+    }
+    case "gameEnded": {
+      const users = {
+        ...state.users,
+        byId: { ...state.users.byId },
+      };
+      state.game.players.forEach((userId, i) => {
+        const user = users.byId[userId];
+        users.byId[userId] = {
+          ...user,
+          money: user.money + payload.bonuses[i],
+        };
+      });
+      return {
+        ...state,
+        users,
+        game: {
+          ...state.game,
+          ...payload,
+          done: true,
+        },
         activityEvents: [...state.activityEvents, { type, payload }],
       };
     }
@@ -257,9 +292,9 @@ export const roomReducer = (state = {}, { type, payload }) => {
       hands[bidder][payload.suit] += 1;
       hands[asker][payload.suit] -= 1;
 
-      let deltas = [...state.game.deltas];
-      deltas[bidder] -= payload.price;
-      deltas[asker] += payload.price;
+      let earnings = [...state.game.earnings];
+      earnings[bidder] -= payload.price;
+      earnings[asker] += payload.price;
 
       return {
         ...state,
@@ -280,7 +315,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
         game: {
           ...state.game,
           hands,
-          deltas,
+          earnings,
           books: [
             [0, 0, 0, 0],
             [0, 0, 0, 0],
