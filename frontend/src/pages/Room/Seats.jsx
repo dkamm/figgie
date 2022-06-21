@@ -2,18 +2,20 @@ import React, { useState } from "react";
 
 import { Avatar } from "components/Avatar";
 
-const EmptySeat = ({ seat, takeSeat }) => {
+const EmptySeat = ({ seat, takeSeat, inGame }) => {
   return (
     <tr>
       <td></td>
       <td>
-        <button
-          onClick={() => {
-            takeSeat(seat);
-          }}
-        >
-          Take Seat
-        </button>
+        {!inGame && (
+          <button
+            onClick={() => {
+              takeSeat(seat);
+            }}
+          >
+            Take Seat
+          </button>
+        )}
       </td>
       <td></td>
       <td></td>
@@ -29,6 +31,7 @@ const SeatedUser = ({
   promoteUser,
   kickUser,
   isSpectating,
+  inGame,
 }) => {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user.name);
@@ -62,15 +65,17 @@ const SeatedUser = ({
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between">
-            <Avatar user={user} />
-            {isUser && <button onClick={() => setEditing(true)}>Edit</button>}
-          </div>
+          !inGame && (
+            <div className="flex items-center justify-between">
+              <Avatar user={user} />
+              {isUser && <button onClick={() => setEditing(true)}>Edit</button>}
+            </div>
+          )
         )}
       </td>
       <td className="text-left">{user.money}</td>
       <td>
-        {isAdmin && (
+        {isAdmin && !inGame && (
           <>
             <button
               onClick={() => {
@@ -103,6 +108,7 @@ export const Seats = ({
   promoteUser,
   kickUser,
   isAdmin,
+  inGame,
 }) => {
   return (
     <table className="w-full table-fixed">
@@ -129,10 +135,13 @@ export const Seats = ({
                 isSpectating={false}
                 promoteUser={promoteUser}
                 kickUser={kickUser}
+                inGame={inGame}
               />
             );
           }
-          return <EmptySeat key={i} seat={i} takeSeat={takeSeat} />;
+          return (
+            <EmptySeat key={i} seat={i} takeSeat={takeSeat} inGame={inGame} />
+          );
         })}
         {spectators
           .filter((s) => s)
@@ -148,6 +157,7 @@ export const Seats = ({
                 isSpectating={true}
                 promoteUser={promoteUser}
                 kickUser={kickUser}
+                inGame={inGame}
               />
             );
           })}

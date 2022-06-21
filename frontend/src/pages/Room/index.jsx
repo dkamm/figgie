@@ -347,8 +347,9 @@ export const Room = () => {
                 promoteUser={promoteUser}
                 kickUser={kickUser}
                 isAdmin={isAdmin}
+                inGame={inGame}
               />
-              {!isSpectating && (
+              {!isSpectating && !inGame && (
                 <button onClick={startSpectating}>Spectate</button>
               )}
             </div>
