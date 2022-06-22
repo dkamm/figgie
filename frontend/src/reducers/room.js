@@ -31,18 +31,15 @@ export const roomReducer = (state = {}, { type, payload }) => {
     case "leftRoom":
       return { ...initialState };
     case "userJoined": {
+      const inGame = state.game && !state.game.done;
       let seats = [...state.seats];
       let spectators = [...state.spectators];
       const seat = seats.findIndex((s) => !s);
-      if (seat !== -1) {
+      if (seat !== -1 && !inGame) {
         // User joined to a seat
         seats[seat] = payload.id;
       } else {
-        // User joined to spectators
-        const spectatorSeat = spectators.findIndex((s) => !s);
-        if (spectatorSeat !== -1) {
-          spectators[spectatorSeat] = payload.id;
-        }
+        spectators.push(payload.id);
       }
       return {
         ...state,

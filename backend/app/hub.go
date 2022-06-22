@@ -229,8 +229,12 @@ func (h *Hub) Run() {
 					if name == "" {
 						name = RandomUserName()
 					}
-					seat := room.getNextIndex(room.seats())
+					seat := -1
 					spectatorSeat := -1
+					inGame := room.game != nil && !room.game.Done
+					if !inGame {
+						seat = room.getNextIndex(room.seats())
+					}
 					if seat == -1 {
 						spectatorSeat = room.getNextIndex(room.spectators())
 					}
@@ -254,7 +258,6 @@ func (h *Hub) Run() {
 				}
 
 				// Send the current room state to the client
-
 				spectators := make([]string, 0, room.config.MaxSpectators)
 				for _, spectator := range room.spectators() {
 					if spectator != "" {
@@ -262,16 +265,40 @@ func (h *Hub) Run() {
 					}
 				}
 
-				event := NewEvent(
-					c.RoomId,
-					&JoinedRoomPayload{
-						UserId:     user.Id,
-						Users:      room.activeUsers(),
-						Config:     room.config,
-						Seats:      room.seats(),
-						Spectators: spectators,
-					})
-				message, _ := json.Marshal(event)
+				g := room.game
+				isPlaying := false
+
+				if g != nil && !g.Done {
+					_, isPlaying = g.findPlayer(user.Id)
+				}
+
+				var message []byte
+				if isPlaying {
+					// Send
+					event := NewEvent(
+						c.RoomId,
+						&JoinedRoomRestrictedPayload{
+							UserId:     user.Id,
+							Users:      room.activeUsers(),
+							Config:     room.config,
+							Seats:      room.seats(),
+							Spectators: spectators,
+							Game:       room.game.restrictedView(user.Id),
+						})
+					message, _ = json.Marshal(event)
+				} else {
+					event := NewEvent(
+						c.RoomId,
+						&JoinedRoomPayload{
+							UserId:     user.Id,
+							Users:      room.activeUsers(),
+							Config:     room.config,
+							Seats:      room.seats(),
+							Spectators: spectators,
+							Game:       room.game,
+						})
+					message, _ = json.Marshal(event)
+				}
 				m.client.send <- message
 
 				// Notify other users in the room that a new user has joined
