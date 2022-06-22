@@ -279,7 +279,7 @@ func (h *Hub) Run() {
 						c.RoomId,
 						&JoinedRoomRestrictedPayload{
 							UserId:     user.Id,
-							Users:      room.activeUsers(),
+							Users:      room.allUsers(),
 							Config:     room.config,
 							Seats:      room.seats(),
 							Spectators: spectators,
@@ -291,7 +291,7 @@ func (h *Hub) Run() {
 						c.RoomId,
 						&JoinedRoomPayload{
 							UserId:     user.Id,
-							Users:      room.activeUsers(),
+							Users:      room.allUsers(),
 							Config:     room.config,
 							Seats:      room.seats(),
 							Spectators: spectators,
