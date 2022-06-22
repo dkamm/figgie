@@ -9,4 +9,8 @@
   .list-none::-webkit-details-marker {
     display: none;
   }
+ 
+  table tr th td {
+    border-radius: 0.25rem;
+  }
 }

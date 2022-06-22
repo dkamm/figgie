@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 
-import { Avatar } from "components/Avatar";
+import SeatedUser from "pages/Room/SeatedUser";
 
 const EmptySeat = ({ seat, takeSeat, inGame }) => {
   return (
-    <tr>
-      <td></td>
-      <td>
+    <tr className="p-2 h-16">
+      <td className="p-2 text-right"></td>
+      <td className="p-2 text-left">
         {!inGame && (
           <button
+            className="btn btn-secondary btn-outline p-2"
             onClick={() => {
               takeSeat(seat);
             }}
@@ -17,83 +18,8 @@ const EmptySeat = ({ seat, takeSeat, inGame }) => {
           </button>
         )}
       </td>
-      <td></td>
-      <td></td>
-    </tr>
-  );
-};
-
-const SeatedUser = ({
-  user,
-  isUser,
-  isAdmin,
-  changeName,
-  promoteUser,
-  kickUser,
-  isSpectating,
-  inGame,
-}) => {
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(user.name);
-
-  return (
-    <tr className={isSpectating ? "bg-gray-100" : ""}>
-      <td className="text-right">
-        {isUser && "(You)"} {user.admin && "👑"}
-      </td>
-      <td className="text-left">
-        {editing ? (
-          <div className="flex items-center">
-            <input
-              className="block"
-              type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
-            />
-            <button onClick={() => setEditing(false)}>Cancel</button>
-            <button
-              onClick={() => {
-                if (name != user.name) {
-                  changeName(name);
-                }
-                setEditing(false);
-              }}
-            >
-              Save
-            </button>
-          </div>
-        ) : (
-          !inGame && (
-            <div className="flex items-center justify-between">
-              <Avatar user={user} />
-              {isUser && <button onClick={() => setEditing(true)}>Edit</button>}
-            </div>
-          )
-        )}
-      </td>
-      <td className="text-left">{user.money}</td>
-      <td>
-        {isAdmin && !inGame && (
-          <>
-            <button
-              onClick={() => {
-                promoteUser(user.id);
-              }}
-            >
-              Promote
-            </button>
-            <button
-              onClick={() => {
-                kickUser(user.id);
-              }}
-            >
-              Kick
-            </button>
-          </>
-        )}
-      </td>
+      <td className="p-2 text-left"></td>
+      <td className="p-2 text-left"></td>
     </tr>
   );
 };
@@ -101,7 +27,6 @@ const SeatedUser = ({
 export const Seats = ({
   userId,
   seats,
-  spectators,
   users,
   takeSeat,
   changeName,
@@ -111,17 +36,17 @@ export const Seats = ({
   inGame,
 }) => {
   return (
-    <table className="w-full table-fixed">
-      <thead>
-        <tr>
-          <th></th>
-          <th className="text-left">User</th>
-          <th className="text-left">Money</th>
-          <th></th>
+    <table className="table-fixed w-full border-2 border-gray-400 border-collapse rounded">
+      <thead className="border-b-2 border-gray-400">
+        <tr className="h-8 p-2">
+          <th className="w-20"></th>
+          <th className="pl-2 text-left">User</th>
+          <th className="pl-2 text-left w-16">Money</th>
+          <th className="pl-2 w-52"></th>
         </tr>
       </thead>
 
-      <tbody>
+      <tbody className="divide-y divide-slate-600">
         {seats.map((seat, i) => {
           if (seat) {
             const user = users.byId[seat];
@@ -143,24 +68,6 @@ export const Seats = ({
             <EmptySeat key={i} seat={i} takeSeat={takeSeat} inGame={inGame} />
           );
         })}
-        {spectators
-          .filter((s) => s)
-          .map((spectator, i) => {
-            const user = users.byId[spectator];
-            return (
-              <SeatedUser
-                key={i}
-                user={user}
-                isUser={user.id === userId}
-                isAdmin={isAdmin}
-                changeName={changeName}
-                isSpectating={true}
-                promoteUser={promoteUser}
-                kickUser={kickUser}
-                inGame={inGame}
-              />
-            );
-          })}
       </tbody>
     </table>
   );

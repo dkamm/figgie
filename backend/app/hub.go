@@ -77,7 +77,7 @@ func (h *Hub) pickNewAdmin(room *Room) {
 
 func (h *Hub) Run() {
 
-	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10, GameTime: 3})
+	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10, GameTime: 60})
 
 	for {
 		select {
@@ -254,6 +254,14 @@ func (h *Hub) Run() {
 				}
 
 				// Send the current room state to the client
+
+				spectators := make([]string, 0, room.config.MaxSpectators)
+				for _, spectator := range room.spectators() {
+					if spectator != "" {
+						spectators = append(spectators, spectator)
+					}
+				}
+
 				event := NewEvent(
 					c.RoomId,
 					&JoinedRoomPayload{
@@ -261,7 +269,7 @@ func (h *Hub) Run() {
 						Users:      room.activeUsers(),
 						Config:     room.config,
 						Seats:      room.seats(),
-						Spectators: room.spectators(),
+						Spectators: spectators,
 					})
 				message, _ := json.Marshal(event)
 				m.client.send <- message

@@ -9,6 +9,7 @@ import { Input } from "pages/Room/Input";
 import { Seats } from "pages/Room/Seats";
 import { Timer } from "pages/Room/Timer";
 import { SUITS } from "constants";
+import { Spectators } from "pages/Room/Spectators";
 
 const CHAR2SUIT = {
   c: 0,
@@ -202,7 +203,7 @@ export const Room = () => {
             )}
             {!inGame && game && <div>0:00</div>}
             {!inGame && game && (
-              <table className="table-fixed w-full">
+              <table className="table-fixed w-full border border-grey-40 border-collapse">
                 <thead>
                   <tr>
                     <th className="text-left">Player</th>
@@ -236,8 +237,13 @@ export const Room = () => {
                 </tbody>
               </table>
             )}
+            {isAdmin && !inGame && (
+              <button className="btn btn-accent" onClick={startGame}>
+                New Game
+              </button>
+            )}
             {inGame && (
-              <table className="table-fixed w-full">
+              <table className="table-fixed w-full border border-grey-40 border-collapse">
                 <thead>
                   <tr>
                     <th className="text-left">Suit</th>
@@ -277,7 +283,7 @@ export const Room = () => {
               </table>
             )}
             {inGame && playerId !== -1 && (
-              <table className="table-fixed w-full">
+              <table className="table-fixed w-full border border-grey-40 border-collapse">
                 <thead>
                   <tr>
                     {SUITS.map((suit) => (
@@ -299,7 +305,7 @@ export const Room = () => {
               </table>
             )}
             {inGame && playerId === -1 && (
-              <table className="table-fixed w-full">
+              <table className="table-fixed w-full border border-grey-40 border-collapse">
                 <thead>
                   <tr>
                     <th className="text-left">Player</th>
@@ -330,17 +336,13 @@ export const Room = () => {
             )}
           </div>
           <div className="row-span-full col-start-3 col-span-2">
-            {isAdmin && !inGame && (
-              <button onClick={startGame}>New Game</button>
-            )}
             <div>
-              <div>
+              <div className="flex h-16 items-center py-2">
                 <strong>Seats</strong>
               </div>
               <Seats
                 userId={userId}
                 seats={seats}
-                spectators={spectators}
                 users={users}
                 takeSeat={takeSeat}
                 changeName={changeName}
@@ -349,12 +351,33 @@ export const Room = () => {
                 isAdmin={isAdmin}
                 inGame={inGame}
               />
-              {!isSpectating && !inGame && (
-                <button onClick={startSpectating}>Spectate</button>
-              )}
+              <div className="flex justify-between items-center mt-4 py-2 h-16">
+                <strong className="block">Spectators</strong>
+                {!isSpectating && !inGame && (
+                  <button
+                    className="btn btn-accent btn-outline"
+                    onClick={startSpectating}
+                  >
+                    Spectate
+                  </button>
+                )}
+              </div>
+              <Spectators
+                userId={userId}
+                spectators={spectators}
+                users={users}
+                changeName={changeName}
+                promoteUser={promoteUser}
+                kickUser={kickUser}
+                isAdmin={isAdmin}
+                inGame={inGame}
+              />
             </div>
-            <div>
-              <div className="flex-grow overflow-scroll">
+            <div className="w-full">
+              <div className="py-2 h-16 flex items-center">
+                <strong>Chat</strong>
+              </div>
+              <div className="mt-4 w-full flex-grow overflow-scroll">
                 <ActivityLog users={users} activityEvents={activityEvents} />
               </div>
               <Input

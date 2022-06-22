@@ -20,8 +20,9 @@ export const Input = ({ onSubmit }) => {
   );
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="w-full flex" onSubmit={handleSubmit}>
       <input
+        className="input input-bordered flex-grow"
         type="text"
         name="message"
         placeholder="message"
@@ -29,7 +30,9 @@ export const Input = ({ onSubmit }) => {
         value={message}
         onChange={onMessageChange}
       />
-      <input type="submit" value="Send" />
+      <button type="submit" value="Send" className="btn btn-primary ml-1 p-4">
+        Send
+      </button>
     </form>
   );
 };

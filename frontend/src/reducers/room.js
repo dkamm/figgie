@@ -71,7 +71,6 @@ export const roomReducer = (state = {}, { type, payload }) => {
         spectators = [
           ...spectators.slice(0, spectatorSeat),
           ...spectators.slice(spectatorSeat + 1),
-          "",
         ];
       }
       return {
@@ -107,7 +106,10 @@ export const roomReducer = (state = {}, { type, payload }) => {
         // User was spectating
         const spectatorSeat = spectators.findIndex((s) => s === payload.userId);
         if (spectatorSeat !== -1) {
-          spectators[spectatorSeat] = "";
+          spectators = [
+            ...spectators.slice(0, spectatorSeat),
+            ...spectators.slice(spectatorSeat + 1),
+          ];
         }
       }
       seats[payload.seat] = payload.userId;
@@ -140,8 +142,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
     case "userStartedSpectating": {
       let seats = [...state.seats];
       let spectators = [...state.spectators];
-      const spectatorSeat = spectators.findIndex((s) => !s);
-      spectators[spectatorSeat] = payload.userId;
+      spectators.push(payload.userId);
 
       const seat = seats.findIndex((s) => s === payload.userId);
       if (seat !== -1) {
@@ -189,7 +190,6 @@ export const roomReducer = (state = {}, { type, payload }) => {
         spectators = [
           ...spectators.slice(0, spectatorSeat),
           ...spectators.slice(spectatorSeat + 1),
-          "",
         ];
       }
       return {
