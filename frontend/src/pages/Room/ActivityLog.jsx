@@ -11,3 +11,5 @@ export const ActivityLog = ({ users, activityEvents }) => {
     </div>
   );
 };
+
+export default ActivityLog;

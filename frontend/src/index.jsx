@@ -21,7 +21,7 @@ const wsclient = ReconnectingWebsocket(WS_URL);
 const App = () => {
   return (
     <div className="w-full min-h-screen">
-      <main id="main" className={"w-full"}>
+      <main id="main" className={"w-full p-4"}>
         <Outlet />
       </main>
     </div>

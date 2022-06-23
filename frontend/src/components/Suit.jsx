@@ -2,12 +2,10 @@ import React from "react";
 
 const SUIT_EMOJIS = ["♣", "♠", "♥", "♦"];
 
-export const Suit = ({ suit }) => {
-  return (
-    <div className={suit < 2 ? "text-white" : "text-red-400"}>
-      {SUIT_EMOJIS[suit]}
-    </div>
-  );
+export const Suit = ({ suit, styles = "text-base" }) => {
+  const color = suit < 2 ? "text-gray-400" : "text-red-400";
+
+  return <div className={`${color} ${styles}`}>{SUIT_EMOJIS[suit]}</div>;
 };
 
 export default Suit;

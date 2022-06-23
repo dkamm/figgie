@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useWSClient } from "contexts/WSContext";
-import { Avatar } from "components/Avatar";
-import { Suit } from "components/Suit";
 import { roomReducer, initialState } from "reducers/room";
-import { ActivityLog } from "pages/Room/ActivityLog";
-import { Input } from "pages/Room/Input";
-import { Seats } from "pages/Room/Seats";
-import { Timer } from "pages/Room/Timer";
-import { SUITS } from "constants";
-import { Spectators } from "pages/Room/Spectators";
+import Seats from "pages/Room/Seats";
+import Spectators from "pages/Room/Spectators";
+import Game from "pages/Room/Game";
+import GameSummary from "pages/Room/GameSummary";
+import Hand from "pages/Room/Hand";
+import Hands from "pages/Room/Hands";
+import Chat from "pages/Room/Chat";
 
 const CHAR2SUIT = {
   c: 0,
@@ -180,6 +179,8 @@ export const Room = () => {
   const isPlaying = playerId !== -1;
   const inGame = game && !game.done;
 
+  console.log("playerid", playerId);
+
   return (
     <div className="grid grid-cols-4 grid-rows-4 h-screen">
       {loading && (
@@ -194,197 +195,68 @@ export const Room = () => {
       )}
       {!loading && !failure && (
         <>
-          <div className="row-span-full col-start-1 col-end-3">
-            {inGame && (
-              <Timer
-                serverTime={Date.parse(game.startedAt)}
-                duration={config.gameTime}
-              />
-            )}
-            {!inGame && game && <div>0:00</div>}
-            {!inGame && game && (
-              <table className="table-fixed w-full border border-grey-40 border-collapse">
-                <thead>
-                  <tr>
-                    <th className="text-left">Player</th>
-                    {SUITS.map((s) => (
-                      <th className="text-left" key={s}>
-                        <Suit suit={s} />
-                      </th>
-                    ))}
-                    <th className="text-left">Earnings</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {game.players.map((userId, i) => {
-                    const user = users.byId[userId];
-                    const hand = game.hands[i];
-
-                    return (
-                      <tr key={i}>
-                        <td className="text-left">
-                          <Avatar user={user} />
-                        </td>
-                        {hand.map((c, i) => (
-                          <td className="text-left" key={i}>
-                            {c}
-                          </td>
-                        ))}
-                        <td className="text-left">{game.earnings[i]}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-            {isAdmin && !inGame && (
-              <button className="btn btn-accent" onClick={startGame}>
-                New Game
-              </button>
-            )}
-            {inGame && (
-              <table className="table-fixed w-full border border-grey-40 border-collapse">
-                <thead>
-                  <tr>
-                    <th className="text-left">Suit</th>
-                    <th className="text-left">Bidder</th>
-                    <th className="text-left">Bid</th>
-                    <th className="text-left">Ask</th>
-                    <th className="text-left">Asker</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {game.books.map((book, suit) => {
-                    const bid = book[0];
-                    const bidder = book[1];
-                    const ask = book[2];
-                    const asker = book[3];
-
-                    const bidUser = bid && users.byId[game.players[bidder]];
-                    const askUser = ask && users.byId[game.players[asker]];
-
-                    return (
-                      <tr key={suit}>
-                        <td className="text-left">
-                          <Suit suit={suit} />
-                        </td>
-                        <td className="">
-                          {bidUser ? <Avatar user={bidUser} /> : null}
-                        </td>
-                        <td className="">{bid || null}</td>
-                        <td className="">{ask || null}</td>
-                        <td className="">
-                          {askUser ? <Avatar user={askUser} /> : null}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-            {inGame && playerId !== -1 && (
-              <table className="table-fixed w-full border border-grey-40 border-collapse">
-                <thead>
-                  <tr>
-                    {SUITS.map((suit) => (
-                      <th className="text-left" key={suit}>
-                        <Suit suit={suit} />
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    {SUITS.map((suit) => (
-                      <td className="text-left" key={suit}>
-                        {game.hands[playerId][suit]}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            )}
-            {inGame && playerId === -1 && (
-              <table className="table-fixed w-full border border-grey-40 border-collapse">
-                <thead>
-                  <tr>
-                    <th className="text-left">Player</th>
-                    {SUITS.map((suit) => (
-                      <th className="text-left" key={suit}>
-                        <Suit suit={suit} />
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {game.players.map((userId, playerId) => {
-                    return (
-                      <tr key={playerId}>
-                        <td className="text-left">
-                          <Avatar user={users.byId[userId]} />
-                        </td>
-                        {SUITS.map((suit) => (
-                          <td className="text-left" key={suit}>
-                            {game.hands[playerId][suit]}
-                          </td>
-                        ))}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-          <div className="row-span-full col-start-3 col-span-2">
-            <div>
-              <div className="flex h-16 items-center py-2">
-                <strong>Seats</strong>
-              </div>
-              <Seats
-                userId={userId}
-                seats={seats}
-                users={users}
-                takeSeat={takeSeat}
-                changeName={changeName}
-                promoteUser={promoteUser}
-                kickUser={kickUser}
-                isAdmin={isAdmin}
-                inGame={inGame}
-              />
-              <div className="flex justify-between items-center mt-4 py-2 h-16">
-                <strong className="block">Spectators</strong>
-                {!isSpectating && !inGame && (
-                  <button
-                    className="btn btn-accent btn-outline"
-                    onClick={startSpectating}
-                  >
-                    Spectate
+          <div className="row-span-full col-start-1 col-end-3 mr-1">
+            {!inGame && (
+              <>
+                <GameSummary game={game} users={users} />
+                {isAdmin && (
+                  <button className="btn btn-accent mt-4" onClick={startGame}>
+                    Start New Game
                   </button>
                 )}
+              </>
+            )}
+            {inGame && (
+              <>
+                <Game game={game} users={users} config={config} />
+                {playerId !== -1 && <Hand hand={game.hands[playerId]} />}
+                {playerId === -1 && (
+                  <Hands
+                    hands={game.hands}
+                    players={game.players}
+                    users={users}
+                  />
+                )}
+              </>
+            )}
+          </div>
+          <div className="ml-2 row-span-full col-start-3 col-span-2">
+            <div className="h-full flex flex-col">
+              <div className="max-h-1/2 overflow-auto">
+                <Seats
+                  userId={userId}
+                  seats={seats}
+                  users={users}
+                  takeSeat={takeSeat}
+                  changeName={changeName}
+                  promoteUser={promoteUser}
+                  kickUser={kickUser}
+                  isAdmin={isAdmin}
+                  inGame={inGame}
+                />
+                <Spectators
+                  userId={userId}
+                  blah={spectators}
+                  spectators={spectators}
+                  users={users}
+                  changeName={changeName}
+                  promoteUser={promoteUser}
+                  kickUser={kickUser}
+                  isAdmin={isAdmin}
+                  isSpectating={isSpectating}
+                  inGame={inGame}
+                  startSpectating={startSpectating}
+                />
               </div>
-              <Spectators
-                userId={userId}
-                spectators={spectators}
-                users={users}
-                changeName={changeName}
-                promoteUser={promoteUser}
-                kickUser={kickUser}
-                isAdmin={isAdmin}
-                inGame={inGame}
-              />
-            </div>
-            <div className="w-full">
-              <div className="py-2 h-16 flex items-center">
-                <strong>Chat</strong>
+              <div className="w-full flex-grow">
+                <Chat
+                  users={users}
+                  activityEvents={activityEvents}
+                  onSubmit={
+                    inGame && isPlaying ? onInputSubmitGame : onInputSubmit
+                  }
+                />
               </div>
-              <div className="mt-4 w-full flex-grow overflow-scroll">
-                <ActivityLog users={users} activityEvents={activityEvents} />
-              </div>
-              <Input
-                onSubmit={
-                  inGame && isPlaying ? onInputSubmitGame : onInputSubmit
-                }
-              />
             </div>
           </div>
         </>

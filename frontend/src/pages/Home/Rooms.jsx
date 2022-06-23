@@ -24,8 +24,7 @@ export const Rooms = () => {
   );
 
   const handler = useCallback(
-    (event) => {
-      const message = JSON.parse(event.data);
+    (message) => {
       const { type, data } = message;
       if (type === "roomsListed") {
         setRooms(data);

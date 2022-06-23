@@ -36,3 +36,5 @@ export const Input = ({ onSubmit }) => {
     </form>
   );
 };
+
+export default Input;

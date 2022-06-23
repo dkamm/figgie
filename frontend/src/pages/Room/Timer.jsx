@@ -29,3 +29,5 @@ export const Timer = ({ serverTime, duration }) => {
     </div>
   );
 };
+
+export default Timer;
