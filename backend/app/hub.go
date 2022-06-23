@@ -152,10 +152,17 @@ func (h *Hub) Run() {
 						if admin != nil {
 							adminName = admin.Name
 						}
+						numPlayers := 0
+						for _, seat := range room.seats() {
+							if seat != "" {
+								numPlayers++
+							}
+						}
 						summaries = append(summaries, RoomSummary{
 							RoomId:        room.id,
 							RoomName:      room.config.Name,
 							AdminName:     adminName,
+							NumPlayers:    numPlayers,
 							NumSpectators: len(room.activeUserIds()),
 							MaxSpectators: room.config.MaxSpectators,
 						})

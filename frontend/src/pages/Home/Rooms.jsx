@@ -55,29 +55,44 @@ export const Rooms = () => {
   }, []);
 
   return (
-    <table className="w-full text-left">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Spectators</th>
-          <th>Admin</th>
-          <th>Join</th>
+    <table className="table-fixed w-full border border-gray-400 border-collapse rounded">
+      <thead className="border-b border-gray-400">
+        <tr className="h-8 p-2">
+          <th className="pl-2 text-left">Name</th>
+          <th className="pl-2 text-left">Players</th>
+          <th className="pl-2 text-left">Spectators</th>
+          <th className="pl-2 text-left">Admin</th>
+          <th></th>
         </tr>
       </thead>
-      <tbody>
-        {loading && <tr>Loading...</tr>}
-        {!loading && !rooms.length && <div>No active rooms</div>}
+      <tbody className="divide-y divide-slate-600">
+        {loading && (
+          <tr>
+            <td colSpan={5} className="w-full text-center p-4 h-16">
+              No one is spectating right now
+            </td>
+          </tr>
+        )}
+        {!loading && !rooms.length && (
+          <tr>
+            <td colSpan={5} className="w-full text-center p-4 h-16">
+              No active rooms
+            </td>
+          </tr>
+        )}
         {!loading &&
           rooms.length > 0 &&
           rooms.map((room) => (
             <tr key={room.roomId}>
-              <td>{room.roomName}</td>
-              <td>
+              <td className="p-2 text-left">{room.roomName}</td>
+              <td className="p-2 text-left">{room.numPlayers} / 4</td>
+              <td className="p-2 text-left">
                 {room.numSpectators} / {room.maxSpectators}
               </td>
-              <td>{room.adminName}</td>
-              <td>
+              <td className="p-2 text-left">{room.adminName}</td>
+              <td className="p-2 text-left">
                 <button
+                  className="btn btn-secondary btn-outline btn-sm mx-auto"
                   onClick={() => {
                     join(room.roomId);
                   }}

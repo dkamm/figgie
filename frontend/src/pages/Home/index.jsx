@@ -55,23 +55,29 @@ export const Home = () => {
       </div>
       <div className="row-start-2 row-end-4 col-start-4">
         {isConnected && (
-          <div className="flex flex-col gap-y-4">
-            <button className="block" onClick={createRoom}>
-              Create
+          <div className="flex flex-col gap-y-4 ml-4">
+            <button className="btn btn-primary block" onClick={createRoom}>
+              Create New Room
             </button>
             <form
-              className="flex flex-col"
+              className="flex flex-col gap-y-2 mt-16"
               onSubmit={onSubmitJoinRoom}
               autoComplete="off"
             >
-              <div>
-                <input type="text" name="name" placeholder="Name" />
-              </div>
-              <div>
-                <input type="text" name="roomCode" placeholder="Room Code" />
-              </div>
-              <button className="block" type="submit">
-                Join
+              <input
+                className="block input input-bordered"
+                type="text"
+                name="name"
+                placeholder="Name"
+              />
+              <input
+                className="block input input-bordered"
+                type="text"
+                name="roomCode"
+                placeholder="Room Code"
+              />
+              <button className="block btn btn-primary" type="submit">
+                Join Room
               </button>
             </form>
           </div>
