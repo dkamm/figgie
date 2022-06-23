@@ -6,6 +6,7 @@ export const SeatedUser = ({
   user,
   isUser,
   isAdmin,
+  isSpectating,
   changeName,
   promoteUser,
   kickUser,
@@ -14,8 +15,10 @@ export const SeatedUser = ({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user.name);
 
+  const backgroundColor = isSpectating ? "" : "bg-neutral";
+
   return (
-    <tr className="h-16">
+    <tr className={`h-12 ${backgroundColor}`}>
       <td className="p-2 text-right">
         {isUser && "(You)"} {user.admin && "👑"}
       </td>

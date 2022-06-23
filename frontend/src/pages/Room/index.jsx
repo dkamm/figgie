@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useWSClient } from "contexts/WSContext";
 import { roomReducer, initialState } from "reducers/room";
-import Seats from "pages/Room/Seats";
-import Spectators from "pages/Room/Spectators";
+import Users from "pages/Room/Users";
 import Game from "pages/Room/Game";
 import GameSummary from "pages/Room/GameSummary";
 import Hand from "pages/Room/Hand";
@@ -179,10 +178,8 @@ export const Room = () => {
   const isPlaying = playerId !== -1;
   const inGame = game && !game.done;
 
-  console.log("playerid", playerId);
-
   return (
-    <div className="grid grid-cols-4 grid-rows-4 h-screen">
+    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-4 grid-rows-4 gap-x-2">
       {loading && (
         <div className="row-start-2 row-end-4 col-start-2 col-end-4">
           Loading...
@@ -195,7 +192,7 @@ export const Room = () => {
       )}
       {!loading && !failure && (
         <>
-          <div className="row-span-full col-start-1 col-end-3 mr-1">
+          <div className="row-span-full col-start-1 col-span-2 mr-2">
             {!inGame && (
               <>
                 <GameSummary game={game} users={users} />
@@ -220,44 +217,29 @@ export const Room = () => {
               </>
             )}
           </div>
-          <div className="ml-2 row-span-full col-start-3 col-span-2">
-            <div className="h-full flex flex-col">
-              <div className="max-h-1/2 overflow-auto">
-                <Seats
-                  userId={userId}
-                  seats={seats}
-                  users={users}
-                  takeSeat={takeSeat}
-                  changeName={changeName}
-                  promoteUser={promoteUser}
-                  kickUser={kickUser}
-                  isAdmin={isAdmin}
-                  inGame={inGame}
-                />
-                <Spectators
-                  userId={userId}
-                  blah={spectators}
-                  spectators={spectators}
-                  users={users}
-                  changeName={changeName}
-                  promoteUser={promoteUser}
-                  kickUser={kickUser}
-                  isAdmin={isAdmin}
-                  isSpectating={isSpectating}
-                  inGame={inGame}
-                  startSpectating={startSpectating}
-                />
-              </div>
-              <div className="w-full flex-grow">
-                <Chat
-                  users={users}
-                  activityEvents={activityEvents}
-                  onSubmit={
-                    inGame && isPlaying ? onInputSubmitGame : onInputSubmit
-                  }
-                />
-              </div>
-            </div>
+          <div className="col-start-3 col-span-2 row-start-1 row-span-2 min-h-0">
+            <Users
+              userId={userId}
+              seats={seats}
+              spectators={spectators}
+              users={users}
+              takeSeat={takeSeat}
+              startSpectating={startSpectating}
+              changeName={changeName}
+              promoteUser={promoteUser}
+              kickUser={kickUser}
+              isAdmin={isAdmin}
+              isSpectating={isSpectating}
+              inGame={inGame}
+              maxSpectators={config.maxSpectators}
+            />
+          </div>
+          <div className="col-start-3 col-span-2 row-start-3 row-span-2 min-h-0">
+            <Chat
+              users={users}
+              activityEvents={activityEvents}
+              onSubmit={inGame && isPlaying ? onInputSubmitGame : onInputSubmit}
+            />
           </div>
         </>
       )}

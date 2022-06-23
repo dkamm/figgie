@@ -8,7 +8,7 @@ import { SUITS } from "constants";
 export const GameSummary = ({ game, users }) => {
   return (
     <div>
-      <div className="flex justify-between items-end py-2">
+      <div className="flex justify-between items-end py-2 h-12">
         {!game && <strong className="block">Results</strong>}
         {game && <strong className="block">Game #{game.id} Results</strong>}
         {game && (

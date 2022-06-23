@@ -49,13 +49,13 @@ export const Home = () => {
   }, [wsclient, isConnected, handler]);
 
   return (
-    <div className="grid grid-cols-4 grid-rows-4 h-screen">
+    <div className="grid grid-cols-4 grid-rows-4 gap-x-8">
       <div className="row-start-2 row-end-4 col-start-2 col-end-4">
         <Rooms />
       </div>
       <div className="row-start-2 row-end-4 col-start-4">
         {isConnected && (
-          <div className="flex flex-col gap-y-4 ml-4">
+          <div className="flex flex-col gap-y-4">
             <button className="btn btn-primary block" onClick={createRoom}>
               Create New Room
             </button>

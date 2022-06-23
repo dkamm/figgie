@@ -23,7 +23,7 @@ const App = () => {
   const onClickNavLink = useCallback(() => {}, []);
 
   return (
-    <div className="w-full min-h-screen flex flex-col">
+    <div className="w-full h-screen flex flex-col">
       <header
         id="header"
         className={"w-full z-50 border-b border-gray-400 sticky top-0"}
@@ -49,7 +49,7 @@ const App = () => {
           </ul>
         </nav>
       </header>
-      <main id="main" className={"w-full p-4"}>
+      <main id="main" className={"w-full flex flex-grow p-4"}>
         <Outlet />
       </main>
     </div>

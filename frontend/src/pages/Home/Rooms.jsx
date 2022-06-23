@@ -58,7 +58,7 @@ export const Rooms = () => {
     <table className="table-fixed w-full border border-gray-400 border-collapse rounded">
       <thead className="border-b border-gray-400">
         <tr className="h-8 p-2">
-          <th className="pl-2 text-left">Name</th>
+          <th className="pl-2 text-left">Room</th>
           <th className="pl-2 text-left">Players</th>
           <th className="pl-2 text-left">Spectators</th>
           <th className="pl-2 text-left">Admin</th>

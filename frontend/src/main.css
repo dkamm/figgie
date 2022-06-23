@@ -10,7 +10,9 @@
     display: none;
   }
  
-  table tr th td {
-    border-radius: 0.25rem;
+  .table-sticky-header,
+  .table-sticky-header th {
+    box-shadow: inset 0px .5px rgb(229,231,235), 0px .5px rgb(229,231,235);
   }
+
 }
