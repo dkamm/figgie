@@ -7,7 +7,7 @@ import { SUITS } from "constants";
 
 export const Hands = ({ hands, players, users }) => {
   return (
-    <div className="w-full mt-4">
+    <div className="w-full">
       <div className="py-2">
         <strong>Hands</strong>
       </div>
@@ -25,7 +25,7 @@ export const Hands = ({ hands, players, users }) => {
         <tbody className="divide-y divide-slate-600">
           {players.map((userId, playerId) => {
             return (
-              <tr key={playerId} className="h-16">
+              <tr key={playerId} className="h-12">
                 <td className="pl-2 text-left">
                   <Avatar user={users.byId[userId]} />
                 </td>

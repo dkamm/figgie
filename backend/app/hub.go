@@ -591,6 +591,7 @@ func (h *Hub) Run() {
 						Suit:   p.Suit,
 						Side:   p.Side,
 					})
+					g.Events = append(g.Events, event)
 					message, _ := json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 				case Traded:

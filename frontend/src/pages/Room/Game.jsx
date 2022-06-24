@@ -4,7 +4,7 @@ import Avatar from "components/Avatar";
 import Suit from "components/Suit";
 import Timer from "pages/Room/Timer";
 
-export const Game = ({ game, users, config }) => {
+export const Game = ({ game, users, playerId, hand, config }) => {
   return (
     <div>
       <div className="flex justify-between items-end py-2">
@@ -20,11 +20,11 @@ export const Game = ({ game, users, config }) => {
       <table className="table-fixed w-full border border-gray-400 border-collapse">
         <thead className="border-b border-gray-400">
           <tr className="p-2 h-8">
-            <th className="pl-2 text-left">Suit</th>
-            <th className="pl-2 text-left">Bidder</th>
-            <th className="pl-2 text-left">Bid</th>
-            <th className="pl-2 text-left">Ask</th>
-            <th className="pl-2 text-left">Asker</th>
+            <th className="text-center">Bidder</th>
+            <th className="text-center">Bid</th>
+            <th className="text-center">Suit</th>
+            <th className="text-center">Ask</th>
+            <th className="text-center">Asker</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-600">
@@ -39,15 +39,18 @@ export const Game = ({ game, users, config }) => {
 
             return (
               <tr key={suit} className="h-16">
-                <td className="pl-2 text-left">
-                  <Suit suit={suit} styles="text-lg" />
-                </td>
-                <td className="pl-2 text-left">
+                <td className="text-center">
                   {bidUser ? <Avatar user={bidUser} /> : null}
                 </td>
-                <td className="pl-2 text-left">{bid || null}</td>
-                <td className="pl-2 text-left">{ask || null}</td>
-                <td className="pl-2 text-left">
+                <td className="text-center">{bid || null}</td>
+                <td className="text-center">
+                  <div className="flex flex-col gap-y-1 items-center">
+                    <Suit suit={suit} styles="text-lg" block={true} />
+                    {playerId !== -1 && <div>{hand[suit]}</div>}
+                  </div>
+                </td>
+                <td className="text-center">{ask || null}</td>
+                <td className="text-center">
                   {askUser ? <Avatar user={askUser} /> : null}
                 </td>
               </tr>

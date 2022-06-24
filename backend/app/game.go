@@ -32,6 +32,7 @@ type Game struct {
 	GoalSuit  Suit             `json:"goalSuit"`
 	GoalCount int              `json:"goalCount"`
 	StartedAt time.Time        `json:"startedAt"`
+	Events    []*Event         `json:"events"`
 }
 
 type GameRestrictedView struct {
@@ -42,6 +43,7 @@ type GameRestrictedView struct {
 	Earnings  []int     `json:"earnings"`
 	Books     []Book    `json:"books"`
 	StartedAt time.Time `json:"startedAt"`
+	Events    []*Event  `json:"events"`
 }
 
 func (g *Game) restrictedView(userId string) *GameRestrictedView {
@@ -61,6 +63,7 @@ func (g *Game) restrictedView(userId string) *GameRestrictedView {
 		Earnings:  g.Earnings,
 		Books:     g.Books,
 		StartedAt: g.StartedAt,
+		Events:    g.Events,
 	}
 }
 
@@ -87,6 +90,7 @@ func NewGame(id int, players []string, users map[string]*User) *Game {
 		users:    users,
 		Earnings: earnings,
 		Bonuses:  bonuses,
+		Events:   make([]*Event, 0),
 	}
 }
 

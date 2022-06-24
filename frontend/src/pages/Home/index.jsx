@@ -19,7 +19,7 @@ export const Home = () => {
           name: "room-" + num,
           maxSpectators: 10,
           public: true,
-          gameTime: 30,
+          gameTime: 4 * 60,
         },
       },
     });

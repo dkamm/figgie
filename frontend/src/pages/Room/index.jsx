@@ -5,9 +5,9 @@ import { roomReducer, initialState } from "reducers/room";
 import Users from "pages/Room/Users";
 import Game from "pages/Room/Game";
 import GameSummary from "pages/Room/GameSummary";
-import Hand from "pages/Room/Hand";
-import Hands from "pages/Room/Hands";
+import GameEvents from "pages/Room/GameEvents";
 import Chat from "pages/Room/Chat";
+import Input from "pages/Room/Input";
 
 const CHAR2SUIT = {
   c: 0,
@@ -179,7 +179,7 @@ export const Room = () => {
   const inGame = game && !game.done;
 
   return (
-    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-4 grid-rows-4 gap-x-2">
+    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-8 grid-rows-8 gap-x-4">
       {loading && (
         <div className="row-start-2 row-end-4 col-start-2 col-end-4">
           Loading...
@@ -192,32 +192,53 @@ export const Room = () => {
       )}
       {!loading && !failure && (
         <>
-          <div className="row-span-full col-start-1 col-span-2 mr-2">
-            {!inGame && (
-              <>
+          {!inGame && (
+            <>
+              <div className="col-start-2 col-span-4 row-start-1 row-span-4">
                 <GameSummary game={game} users={users} />
                 {isAdmin && (
                   <button className="btn btn-accent mt-4" onClick={startGame}>
                     Start New Game
                   </button>
                 )}
-              </>
-            )}
-            {inGame && (
-              <>
-                <Game game={game} users={users} config={config} />
-                {playerId !== -1 && <Hand hand={game.hands[playerId]} />}
-                {playerId === -1 && (
-                  <Hands
-                    hands={game.hands}
-                    players={game.players}
-                    users={users}
-                  />
+              </div>
+            </>
+          )}
+          {inGame && (
+            <>
+              <div className="col-start-2 col-span-4 h-full">
+                <Game
+                  game={game}
+                  users={users}
+                  config={config}
+                  playerId={playerId}
+                  hand={game.hands[playerId]}
+                />
+                {playerId !== -1 && (
+                  <div className="mt-2">
+                    <Input onSubmit={onInputSubmitGame} />
+                  </div>
                 )}
-              </>
-            )}
-          </div>
-          <div className="col-start-3 col-span-2 row-start-1 row-span-2 min-h-0">
+              </div>
+            </>
+          )}
+          {game && (
+            <div
+              className={
+                "col-start-2 col-span-4 " +
+                (isSpectating && inGame && !isAdmin
+                  ? "row-start-5 row-span-4"
+                  : "row-start-6 row-span-3")
+              }
+            >
+              <GameEvents
+                users={users}
+                events={game.events}
+                players={game.players}
+              />
+            </div>
+          )}
+          <div className="col-start-6 col-span-3 row-start-1 row-span-4 min-h-0">
             <Users
               userId={userId}
               seats={seats}
@@ -234,11 +255,12 @@ export const Room = () => {
               maxSpectators={config.maxSpectators}
             />
           </div>
-          <div className="col-start-3 col-span-2 row-start-3 row-span-2 min-h-0">
+          <div className="col-start-6 col-span-3 row-start-5 row-span-4 min-h-0">
             <Chat
               users={users}
               activityEvents={activityEvents}
               onSubmit={inGame && isPlaying ? onInputSubmitGame : onInputSubmit}
+              disabled={inGame && playerId !== -1}
             />
           </div>
         </>

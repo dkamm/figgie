@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 
-export const Input = ({ onSubmit }) => {
+export const Input = ({ onSubmit, disabled }) => {
   const [message, setMessage] = useState("");
 
   const onMessageChange = useCallback(
@@ -29,8 +29,14 @@ export const Input = ({ onSubmit }) => {
         autoComplete="off"
         value={message}
         onChange={onMessageChange}
+        disabled={disabled}
       />
-      <button type="submit" value="Send" className="btn btn-primary ml-1 p-4">
+      <button
+        type="submit"
+        value="Send"
+        className="btn btn-primary ml-1 p-4"
+        disabled={disabled}
+      >
         Send
       </button>
     </form>

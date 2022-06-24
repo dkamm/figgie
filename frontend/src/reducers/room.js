@@ -270,6 +270,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
         game: {
           ...state.game,
           books: books,
+          events: [...state.game.events, { type, payload }],
         },
       };
     }
@@ -316,18 +317,8 @@ export const roomReducer = (state = {}, { type, payload }) => {
             [0, 0, 0, 0],
             [0, 0, 0, 0],
           ],
+          events: [...state.game.events, { type, payload }],
         },
-        activityEvents: [
-          ...state.activityEvents,
-          {
-            type,
-            payload: {
-              ...payload,
-              bidUserId: bidUser.id,
-              askUserId: askUser.id,
-            },
-          },
-        ],
       };
     }
     default:
