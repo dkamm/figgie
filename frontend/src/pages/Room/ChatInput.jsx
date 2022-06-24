@@ -1,14 +1,7 @@
 import React, { useState, useCallback } from "react";
 
-export const ChatInput = ({ send, disabled }) => {
+export const ChatInput = ({ onSubmit, disabled }) => {
   const [message, setMessage] = useState("");
-
-  const sendMessage = useCallback(
-    (message) => {
-      send("sendMessage", { message });
-    },
-    [send]
-  );
 
   const onMessageChange = useCallback(
     (e) => {
@@ -17,17 +10,17 @@ export const ChatInput = ({ send, disabled }) => {
     [setMessage]
   );
 
-  const onSubmit = useCallback(
+  const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
-      sendMessage(message);
+      onSubmit(message);
       setMessage("");
     },
-    [sendMessage, message, setMessage]
+    [onSubmit, message, setMessage]
   );
 
   return (
-    <form className="w-full flex" onSubmit={onSubmit}>
+    <form className="w-full flex" onSubmit={handleSubmit}>
       <input
         className="input input-bordered flex-grow"
         type="text"
