@@ -69,7 +69,7 @@ export const ActivityEvent = ({ users, activityEvent }) => {
   const { type, payload, playerId } = activityEvent;
   switch (type) {
     case "userJoined":
-      return <UserJoined users={users} payload={payload} />;
+      return <UserJoined users={users} playerId={playerId} payload={payload} />;
 
     case "userLeft":
       return <UserLeft users={users} playerId={playerId} payload={payload} />;
