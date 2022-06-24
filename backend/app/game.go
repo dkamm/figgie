@@ -139,7 +139,10 @@ func (g *Game) End() {
 		g.Bonuses[i] += bonus
 	}
 
-	bonus := (200 - g.GoalCount*10) / len(topGoalPlayers)
+	bonus := (200 - g.GoalCount*10)
+	if len(topGoalPlayers) > 0 {
+		bonus /= len(topGoalPlayers)
+	}
 	for _, player := range topGoalPlayers {
 		g.Earnings[player] += bonus
 		g.Bonuses[player] += bonus

@@ -39,7 +39,8 @@ export const roomReducer = (state = {}, { type, payload }) => {
         // User joined to a seat
         seats[seat] = payload.id;
       } else {
-        spectators.push(payload.id);
+        const spectatorSeat = spectators.findIndex((s) => !s);
+        spectators[spectatorSeat] = payload.id;
       }
       return {
         ...state,
@@ -67,6 +68,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
         const spectatorSeat = spectators.findIndex((s) => s === payload.userId);
         spectators = [
           ...spectators.slice(0, spectatorSeat),
+          "",
           ...spectators.slice(spectatorSeat + 1),
         ];
       }
@@ -105,6 +107,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
         if (spectatorSeat !== -1) {
           spectators = [
             ...spectators.slice(0, spectatorSeat),
+            "",
             ...spectators.slice(spectatorSeat + 1),
           ];
         }
@@ -139,12 +142,19 @@ export const roomReducer = (state = {}, { type, payload }) => {
     case "userStartedSpectating": {
       let seats = [...state.seats];
       let spectators = [...state.spectators];
-      spectators.push(payload.userId);
 
       const seat = seats.findIndex((s) => s === payload.userId);
       if (seat !== -1) {
         seats[seat] = "";
+      } else {
+        const spectatorSeat = spectators.findIndex((s) => s === payload.userId);
+        spectators = [
+          ...spectators.slice(0, spectatorSeat),
+          "",
+          ...spectators.slice(spectatorSeat + 1),
+        ];
       }
+      spectators[payload.seat] = payload.userId;
       return {
         ...state,
         seats,
@@ -186,6 +196,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
         const spectatorSeat = spectators.findIndex((s) => s === payload.userId);
         spectators = [
           ...spectators.slice(0, spectatorSeat),
+          "",
           ...spectators.slice(spectatorSeat + 1),
         ];
       }

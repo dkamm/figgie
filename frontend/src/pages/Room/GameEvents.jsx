@@ -65,6 +65,12 @@ export const GameEvents = ({ users, players, events }) => {
         </a>
       </div>
       <div className="h-full overflow-y-scroll border border-base-content p-2">
+        {filteredEvents.length === 0 && (
+          <div>
+            {mode === "trades" && "No trades yet"}
+            {mode === "allEvents" && "No game events yet"}
+          </div>
+        )}
         {filteredEvents.map(({ type, payload }, i) => {
           switch (type) {
             case "orderAdded":

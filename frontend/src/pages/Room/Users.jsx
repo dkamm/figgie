@@ -14,25 +14,12 @@ export const Users = ({
   promoteUser,
   kickUser,
   isAdmin,
-  isSpectating,
   inGame,
-  maxSpectators,
 }) => {
-  const emptySpectators = spectators
-    ? new Array(maxSpectators - spectators.length).fill(0)
-    : [];
   return (
     <div className="h-full flex flex-col">
       <div className="flex justify-between items-end py-2">
         <strong className="block">Users</strong>
-        {!isSpectating && !inGame && (
-          <button
-            className="block btn btn-sm btn-accent btn-outline"
-            onClick={startSpectating}
-          >
-            Spectate
-          </button>
-        )}
       </div>
       <div className="table-sticky-header h-full overflow-auto">
         <table className="table-fixed w-full border border-base-content border-collapse rounded">
@@ -42,7 +29,7 @@ export const Users = ({
               <th className="pl-2 text-left sticky top-0 z-10">User</th>
               <th className="pl-2 text-left w-16 sticky top-0 z-10">Money</th>
               <th className="pl-4 text-left w-20 sticky top-0 z-10">Rebuys</th>
-              <th className="pl-2 w-52 sticky top-0 z-10"></th>
+              <th className="pl-2 text-left w-16 sticky top-0 z-10"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-600">
@@ -68,13 +55,26 @@ export const Users = ({
                   key={i}
                   seat={i}
                   takeSeat={takeSeat}
+                  startSpectating={startSpectating}
                   inGame={inGame}
                   isSpectator={false}
                 />
               );
             })}
             {spectators &&
-              spectators.map((spectator) => {
+              spectators.map((spectator, i) => {
+                if (spectator === "") {
+                  return (
+                    <EmptySeat
+                      key={`spectator-seat-${i}`}
+                      seat={i}
+                      takeSeat={takeSeat}
+                      startSpectating={startSpectating}
+                      inGame={inGame}
+                      isSpectator={true}
+                    />
+                  );
+                }
                 const user = users.byId[spectator];
                 return (
                   <SeatedUser
@@ -90,17 +90,6 @@ export const Users = ({
                   />
                 );
               })}
-            {emptySpectators.map((_, i) => {
-              return (
-                <EmptySeat
-                  key={`empty-spectator-${i}`}
-                  seat={i}
-                  takeSeat={takeSeat}
-                  inGame={inGame}
-                  isSpectator={true}
-                />
-              );
-            })}
           </tbody>
         </table>
       </div>

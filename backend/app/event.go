@@ -83,6 +83,7 @@ type UserTookSeatPayload struct {
 
 type UserStartedSpectatingPayload struct {
 	UserId string `json:"userId"`
+	Seat   int    `json:"seat"`
 }
 
 type UserPromotedPayload struct {

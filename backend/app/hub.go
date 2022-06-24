@@ -264,14 +264,6 @@ func (h *Hub) Run() {
 					user.Left = false
 				}
 
-				// Send the current room state to the client
-				spectators := make([]string, 0, room.config.MaxSpectators)
-				for _, spectator := range room.spectators() {
-					if spectator != "" {
-						spectators = append(spectators, spectator)
-					}
-				}
-
 				g := room.game
 				isPlaying := false
 
@@ -289,7 +281,7 @@ func (h *Hub) Run() {
 							Users:      room.allUsers(),
 							Config:     room.config,
 							Seats:      room.seats(),
-							Spectators: spectators,
+							Spectators: room.spectators(),
 							Game:       room.game.restrictedView(user.Id),
 						})
 					message, _ = json.Marshal(event)
@@ -301,7 +293,7 @@ func (h *Hub) Run() {
 							Users:      room.allUsers(),
 							Config:     room.config,
 							Seats:      room.seats(),
-							Spectators: spectators,
+							Spectators: room.spectators(),
 							Game:       room.game,
 						})
 					message, _ = json.Marshal(event)
@@ -453,24 +445,19 @@ func (h *Hub) Run() {
 					continue
 				}
 
-				if room.game != nil && !room.game.Done {
-					log.Printf("cannot start spectating")
-					// Can't start spectating while game is in progress
-					continue
-				}
+				p := &StartSpectatingPayload{}
+				json.Unmarshal(c.Payload, p)
 
 				user, ok := room.users[m.client.userId]
-				spectators := room.spectators()
-				spectatorSeat := room.getNextIndex(spectators)
-				if spectatorSeat == -1 {
-					log.Printf("next spectator seat is wrong! room=%s", room.id)
+				if !ok {
 					continue
 				}
 				user.Seat = -1
-				user.SpectatorSeat = spectatorSeat
+				user.SpectatorSeat = p.Seat
 
 				event := NewEvent(c.RoomId, &UserStartedSpectatingPayload{
 					UserId: m.client.userId,
+					Seat:   user.SpectatorSeat,
 				})
 
 				message, _ := json.Marshal(event)

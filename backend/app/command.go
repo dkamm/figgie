@@ -46,7 +46,9 @@ type TakeSeatPayload struct {
 	Seat int `json:"seat"`
 }
 
-type StartSpectatingPayload struct{}
+type StartSpectatingPayload struct {
+	Seat int `json:"seat"`
+}
 
 type ChangeNamePayload struct {
 	Name string `json:"name"`

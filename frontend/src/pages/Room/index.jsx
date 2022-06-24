@@ -118,9 +118,12 @@ export const Room = () => {
     [send]
   );
 
-  const startSpectating = useCallback(() => {
-    send("startSpectating", {});
-  }, [send]);
+  const startSpectating = useCallback(
+    (seat) => {
+      send("startSpectating", { seat });
+    },
+    [send]
+  );
 
   const startGame = useCallback(() => {
     send("startGame", {});
@@ -250,7 +253,6 @@ export const Room = () => {
               promoteUser={promoteUser}
               kickUser={kickUser}
               isAdmin={isAdmin}
-              isSpectating={isSpectating}
               inGame={inGame}
               maxSpectators={config.maxSpectators}
             />

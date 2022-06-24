@@ -15,7 +15,7 @@ export const SeatedUser = ({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user.name);
 
-  const backgroundColor = isSpectating ? "" : "bg-neutral";
+  const backgroundColor = isSpectating ? "bg-base-100" : "bg-neutral";
 
   return (
     <tr className={`h-12 ${backgroundColor}`}>
@@ -69,23 +69,28 @@ export const SeatedUser = ({
       <td className="p-2 pl-4 text-left">{user.rebuys}</td>
       <td>
         {isAdmin && !inGame && !user.admin && (
-          <div className="p-2 flex">
-            <button
-              className="btn btn-sm btn-warn btn-outline"
-              onClick={() => {
-                promoteUser(user.id);
-              }}
+          <div className={`dropdown dropdown-end ${backgroundColor}`}>
+            <label tabIndex="0" className={`btn btn-sm m-1 ${backgroundColor}`}>
+              …
+            </label>
+            <ul
+              tabIndex="0"
+              className="dropdown-content menu p-2 shadow bg-neutral-focus rounded-box w-48"
             >
-              Promote
-            </button>
-            <button
-              className="btn btn-sm btn-error btn-outline ml-2"
-              onClick={() => {
-                kickUser(user.id);
-              }}
-            >
-              Kick
-            </button>
+              <li>
+                <a
+                  className="text-base-content"
+                  onClick={() => promoteUser(user.id)}
+                >
+                  Promote
+                </a>
+              </li>
+              <li>
+                <a className="text-red-400" onClick={() => kickUser(user.id)}>
+                  Kick
+                </a>
+              </li>
+            </ul>
           </div>
         )}
       </td>
