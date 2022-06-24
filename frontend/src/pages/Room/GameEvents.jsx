@@ -7,7 +7,8 @@ const OrderAdded = ({ users, players, payload }) => {
   const user = users.byId[players[payload.player]];
   return (
     <div>
-      <Avatar user={user} /> {payload.side === 0 ? "bid" : "sell"}{" "}
+      <Avatar user={user} playerId={payload.player} />{" "}
+      {payload.side === 0 ? "bid" : "sell"}{" "}
       <Suit suit={payload.suit} inline={true} /> at{" "}
       <strong>{payload.price}</strong>
     </div>
@@ -21,14 +22,18 @@ const OrderTraded = ({ users, players, payload }) => {
     <div>
       {payload.side === 0 && (
         <>
-          <Avatar user={bidUser} /> bought <Suit suit={payload.suit} /> from{" "}
-          <Avatar user={askUser} /> for <strong>{payload.price}</strong>
+          <Avatar user={bidUser} playerId={payload.bidder} /> bought{" "}
+          <Suit suit={payload.suit} /> from{" "}
+          <Avatar user={askUser} playerId={payload.asker} /> for{" "}
+          <strong>{payload.price}</strong>
         </>
       )}
       {payload.side === 1 && (
         <>
-          <Avatar user={askUser} /> sold <Suit suit={payload.suit} /> to{" "}
-          <Avatar user={askUser} /> for <strong>{payload.price}</strong>
+          <Avatar user={askUser} playerId={payload.asker} /> sold{" "}
+          <Suit suit={payload.suit} /> to{" "}
+          <Avatar user={bidUser} playerId={payload.bidder} /> for{" "}
+          <strong>{payload.price}</strong>
         </>
       )}
     </div>

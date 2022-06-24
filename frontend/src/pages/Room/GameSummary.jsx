@@ -55,7 +55,7 @@ export const GameSummary = ({ game, users }) => {
               return (
                 <tr key={i} className="h-16">
                   <td className="pl-2 text-left">
-                    <Avatar user={user} />
+                    <Avatar user={user} playerId={i} />
                   </td>
                   {hand.map((c, i) => (
                     <td className="pl-2 text-left" key={i}>

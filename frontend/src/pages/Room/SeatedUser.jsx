@@ -11,6 +11,7 @@ export const SeatedUser = ({
   promoteUser,
   kickUser,
   inGame,
+  playerId = -1,
 }) => {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user.name);
@@ -53,7 +54,7 @@ export const SeatedUser = ({
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <Avatar user={user} />
+            <Avatar user={user} playerId={playerId} />
             {isUser && !inGame && (
               <button
                 className="btn btn-sm btn-primary btn-outline"

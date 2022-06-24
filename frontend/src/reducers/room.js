@@ -51,7 +51,10 @@ export const roomReducer = (state = {}, { type, payload }) => {
           },
           allIds: [...state.users.allIds, payload.id],
         },
-        activityEvents: [...state.activityEvents, { type, payload }],
+        activityEvents: [
+          ...state.activityEvents,
+          { type, payload, playerId: seat },
+        ],
         seats,
         spectators,
       };
@@ -66,11 +69,13 @@ export const roomReducer = (state = {}, { type, payload }) => {
       } else {
         // User was spectating
         const spectatorSeat = spectators.findIndex((s) => s === payload.userId);
-        spectators = [
-          ...spectators.slice(0, spectatorSeat),
-          "",
-          ...spectators.slice(spectatorSeat + 1),
-        ];
+        if (spectatorSeat != -1) {
+          spectators = [
+            ...spectators.slice(0, spectatorSeat),
+            "",
+            ...spectators.slice(spectatorSeat + 1),
+          ];
+        }
       }
       return {
         ...state,
@@ -84,16 +89,24 @@ export const roomReducer = (state = {}, { type, payload }) => {
             },
           },
         },
-        activityEvents: [...state.activityEvents, { type, payload }],
+        activityEvents: [
+          ...state.activityEvents,
+          { type, payload, playerId: seat },
+        ],
         seats,
         spectators,
       };
     }
-    case "userMessaged":
+    case "userMessaged": {
+      const seat = state.seats.findIndex((s) => s === payload.userId);
       return {
         ...state,
-        activityEvents: [...state.activityEvents, { type, payload }],
+        activityEvents: [
+          ...state.activityEvents,
+          { type, payload, playerId: seat },
+        ],
       };
+    }
     case "userTookSeat": {
       let seats = [...state.seats];
       let spectators = [...state.spectators];
@@ -120,6 +133,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
       };
     }
     case "userChangedName": {
+      const seat = state.seats.findIndex((s) => s === payload.userId);
       const prevName = state.users.byId[payload.userId].name;
       return {
         ...state,
@@ -135,7 +149,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
         },
         activityEvents: [
           ...state.activityEvents,
-          { type, payload: { prevName, ...payload } },
+          { type, payload: { prevName, ...payload }, playerId: seat },
         ],
       };
     }
@@ -148,11 +162,13 @@ export const roomReducer = (state = {}, { type, payload }) => {
         seats[seat] = "";
       } else {
         const spectatorSeat = spectators.findIndex((s) => s === payload.userId);
-        spectators = [
-          ...spectators.slice(0, spectatorSeat),
-          "",
-          ...spectators.slice(spectatorSeat + 1),
-        ];
+        if (spectatorSeat !== -1) {
+          spectators = [
+            ...spectators.slice(0, spectatorSeat),
+            "",
+            ...spectators.slice(spectatorSeat + 1),
+          ];
+        }
       }
       spectators[payload.seat] = payload.userId;
       return {
@@ -165,6 +181,7 @@ export const roomReducer = (state = {}, { type, payload }) => {
       const adminId = state.users.allIds.filter((id) => {
         return state.users.byId[id].admin;
       });
+      const seat = state.seats.findIndex((s) => s === payload.userId);
       return {
         ...state,
         users: {
@@ -181,7 +198,10 @@ export const roomReducer = (state = {}, { type, payload }) => {
             },
           },
         },
-        activityEvents: [...state.activityEvents, { type, payload }],
+        activityEvents: [
+          ...state.activityEvents,
+          { type, payload, playerId: seat },
+        ],
       };
     }
     case "userKicked": {
@@ -214,7 +234,10 @@ export const roomReducer = (state = {}, { type, payload }) => {
         },
         seats,
         spectators,
-        activityEvents: [...state.activityEvents, { type, payload }],
+        activityEvents: [
+          ...state.activityEvents,
+          { type, payload, playerId: seat },
+        ],
       };
     }
     case "gameStarted": {

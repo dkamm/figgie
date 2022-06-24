@@ -164,6 +164,9 @@ export const Room = () => {
                     Start New Game
                   </button>
                 )}
+                {!isAdmin && (
+                  <div className="mt-4">Waiting for admin to start game...</div>
+                )}
               </div>
             </>
           )}

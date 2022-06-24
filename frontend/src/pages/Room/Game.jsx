@@ -40,18 +40,22 @@ export const Game = ({ game, users, playerId, hand, config }) => {
             return (
               <tr key={suit} className="h-16">
                 <td className="text-center">
-                  {bidUser ? <Avatar user={bidUser} /> : null}
+                  {bidUser ? <Avatar user={bidUser} playerId={bidder} /> : null}
                 </td>
-                <td className="text-center">{bid || null}</td>
+                <td className={`text-center text-player-${bidder}`}>
+                  {bid || null}
+                </td>
                 <td className="text-center">
                   <div className="flex flex-col gap-y-1 items-center">
                     <Suit suit={suit} styles="text-lg" block={true} />
                     {playerId !== -1 && <div>{hand[suit]}</div>}
                   </div>
                 </td>
-                <td className="text-center">{ask || null}</td>
+                <td className={`text-center text-player-${asker}`}>
+                  {ask || null}
+                </td>
                 <td className="text-center">
-                  {askUser ? <Avatar user={askUser} /> : null}
+                  {askUser ? <Avatar user={askUser} playerId={asker} /> : null}
                 </td>
               </tr>
             );

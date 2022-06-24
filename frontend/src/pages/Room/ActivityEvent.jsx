@@ -2,57 +2,57 @@ import React from "react";
 
 import Avatar from "components/Avatar";
 
-const UserJoined = ({ users, payload }) => {
+const UserJoined = ({ users, payload, playerId }) => {
   const user = users.byId[payload.id];
   return (
     <div>
-      <Avatar user={user} /> <em>joined</em>
+      <Avatar user={user} playerId={playerId} /> <em>joined</em>
     </div>
   );
 };
 
-const UserLeft = ({ users, payload }) => {
+const UserLeft = ({ users, payload, playerId }) => {
   const user = users.byId[payload.userId];
   return (
     <div>
-      <Avatar user={user} /> <em>left</em>
+      <Avatar user={user} playerId={playerId} /> <em>left</em>
     </div>
   );
 };
 
-const UserMessaged = ({ users, payload }) => {
+const UserMessaged = ({ users, payload, playerId }) => {
   const user = users.byId[payload.userId];
   return (
     <div>
-      <Avatar user={user} />: {payload.message}
+      <Avatar user={user} playerId={playerId} />: {payload.message}
     </div>
   );
 };
 
-const UserChangedName = ({ users, payload }) => {
+const UserChangedName = ({ users, payload, playerId }) => {
   const user = users.byId[payload.userId];
   return (
     <div>
-      <Avatar user={user} /> changed their name from{" "}
+      <Avatar user={user} playerId={playerId} /> changed their name from{" "}
       <strong>{payload.prevName}</strong>
     </div>
   );
 };
 
-const UserPromoted = ({ users, payload }) => {
+const UserPromoted = ({ users, payload, playerId }) => {
   const user = users.byId[payload.userId];
   return (
     <div>
-      <Avatar user={user} /> was promoted to admin
+      <Avatar user={user} playerId={playerId} /> was promoted to admin
     </div>
   );
 };
 
-const UserKicked = ({ users, payload }) => {
+const UserKicked = ({ users, payload, playerId }) => {
   const user = users.byId[payload.userId];
   return (
     <div>
-      <Avatar user={user} /> was kicked
+      <Avatar user={user} playerId={playerId} /> was kicked
     </div>
   );
 };
@@ -66,25 +66,31 @@ const GameEnded = ({ payload }) => {
 };
 
 export const ActivityEvent = ({ users, activityEvent }) => {
-  const { type, payload } = activityEvent;
+  const { type, payload, playerId } = activityEvent;
   switch (type) {
     case "userJoined":
       return <UserJoined users={users} payload={payload} />;
 
     case "userLeft":
-      return <UserLeft users={users} payload={payload} />;
+      return <UserLeft users={users} playerId={playerId} payload={payload} />;
 
     case "userMessaged":
-      return <UserMessaged users={users} payload={payload} />;
+      return (
+        <UserMessaged users={users} playerId={playerId} payload={payload} />
+      );
 
     case "userChangedName":
-      return <UserChangedName users={users} payload={payload} />;
+      return (
+        <UserChangedName users={users} playerId={playerId} payload={payload} />
+      );
 
     case "userPromoted":
-      return <UserPromoted users={users} payload={payload} />;
+      return (
+        <UserPromoted users={users} playerId={playerId} payload={payload} />
+      );
 
     case "userKicked":
-      return <UserKicked users={users} payload={payload} />;
+      return <UserKicked users={users} playerId={playerId} payload={payload} />;
 
     case "gameStarted":
       return <GameStarted payload={payload} />;

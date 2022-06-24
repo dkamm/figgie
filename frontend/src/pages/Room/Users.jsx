@@ -47,6 +47,7 @@ export const Users = ({
                     promoteUser={promoteUser}
                     kickUser={kickUser}
                     inGame={inGame}
+                    playerId={i}
                   />
                 );
               }
