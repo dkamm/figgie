@@ -1,9 +1,9 @@
 import React from "react";
 
 import ActivityLog from "pages/Room/ActivityLog";
-import Input from "pages/Room/Input";
+import ChatInput from "pages/Room/ChatInput";
 
-export const Chat = ({ users, activityEvents, onSubmit, disabled }) => {
+export const Chat = ({ users, activityEvents, send, disabled }) => {
   return (
     <div className="h-full flex flex-col">
       <div className="py-2 flex items-center">
@@ -11,7 +11,7 @@ export const Chat = ({ users, activityEvents, onSubmit, disabled }) => {
       </div>
       <ActivityLog users={users} activityEvents={activityEvents} />
       <div className="mt-2">
-        <Input onSubmit={onSubmit} disabled={disabled} />
+        <ChatInput send={send} disabled={disabled} />
       </div>
     </div>
   );

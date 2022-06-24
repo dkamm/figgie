@@ -7,14 +7,7 @@ import Game from "pages/Room/Game";
 import GameSummary from "pages/Room/GameSummary";
 import GameEvents from "pages/Room/GameEvents";
 import Chat from "pages/Room/Chat";
-import Input from "pages/Room/Input";
-
-const CHAR2SUIT = {
-  c: 0,
-  s: 1,
-  h: 2,
-  d: 3,
-};
+import OrderInput from "pages/Room/OrderInput";
 
 export const Room = () => {
   const { roomId } = useParams();
@@ -72,9 +65,10 @@ export const Room = () => {
         case "gameStarted":
         case "gameEnded":
         case "orderAdded":
-        case "orderRejected":
         case "orderTraded":
           dispatch({ type, payload });
+          break;
+        case "orderRejected":
           break;
         default:
           console.error("invalid message type", type);
@@ -86,20 +80,6 @@ export const Room = () => {
   const joinRoom = useCallback(
     (name) => {
       send("joinRoom", { name });
-    },
-    [send]
-  );
-
-  const sendMessage = useCallback(
-    (message) => {
-      send("sendMessage", { message });
-    },
-    [send]
-  );
-
-  const sendOrder = useCallback(
-    (price, suit, side) => {
-      send("sendOrder", { price, suit, side });
     },
     [send]
   );
@@ -154,26 +134,6 @@ export const Room = () => {
     return () => wsclient.removeMessageHandler(handler);
   }, [wsclient, handler, isConnected, joinRoom, name]);
 
-  const onInputSubmit = useCallback(
-    (message) => {
-      sendMessage(message);
-    },
-    [sendMessage]
-  );
-
-  const onInputSubmitGame = useCallback(
-    (message) => {
-      const tokens = message.split(" ");
-
-      const suit = CHAR2SUIT[tokens[0][0]];
-      const side = tokens[1][0] === "b" ? 0 : 1;
-      const price = parseInt(tokens[2]);
-
-      sendOrder(price, suit, side);
-    },
-    [sendOrder]
-  );
-
   const isAdmin = userId && users.byId[userId].admin;
   const isSpectating = userId && spectators.find((s) => s === userId);
   const playerId =
@@ -209,7 +169,7 @@ export const Room = () => {
           )}
           {inGame && (
             <>
-              <div className="col-start-2 col-span-4 h-full">
+              <div className="col-start-2 col-span-4 h-full flex flex-col gap-y-2">
                 <Game
                   game={game}
                   users={users}
@@ -217,10 +177,12 @@ export const Room = () => {
                   playerId={playerId}
                   hand={game.hands[playerId]}
                 />
-                {playerId !== -1 && (
-                  <div className="mt-2">
-                    <Input onSubmit={onInputSubmitGame} />
-                  </div>
+                {isPlaying && (
+                  <OrderInput
+                    wsclient={wsclient}
+                    isConnected={isConnected}
+                    send={send}
+                  />
                 )}
               </div>
             </>
@@ -261,8 +223,8 @@ export const Room = () => {
             <Chat
               users={users}
               activityEvents={activityEvents}
-              onSubmit={inGame && isPlaying ? onInputSubmitGame : onInputSubmit}
-              disabled={inGame && playerId !== -1}
+              send={send}
+              disabled={inGame && isPlaying}
             />
           </div>
         </>
