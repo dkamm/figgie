@@ -245,7 +245,7 @@ func (g *Game) HandleOrder(player int, price int, suit Suit, side Side) HandleOr
 				}
 			}
 		} else {
-			if bidPrice != 0 && price < bidPrice {
+			if bidPrice != 0 && price <= bidPrice {
 				return HandleOrderResponse{
 					Type:         Rejected,
 					rejectReason: "price is too low",
@@ -284,7 +284,7 @@ func (g *Game) HandleOrder(player int, price int, suit Suit, side Side) HandleOr
 				}
 			}
 		} else {
-			if askPrice != 0 && price > askPrice {
+			if askPrice != 0 && price >= askPrice {
 				return HandleOrderResponse{
 					Type:         Rejected,
 					rejectReason: "price is too high",

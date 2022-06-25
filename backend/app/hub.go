@@ -582,6 +582,7 @@ func (h *Hub) Run() {
 					message, _ := json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 				case Traded:
+					price := resp.restingPrice
 					var bidder, asker int
 					if p.Side == 0 {
 						bidder = player
@@ -595,8 +596,9 @@ func (h *Hub) Run() {
 						Asker:  asker,
 						Side:   p.Side,
 						Suit:   p.Suit,
-						Price:  p.Price,
+						Price:  price,
 					})
+					g.Events = append(g.Events, event)
 					message, _ := json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 				case Rejected:
