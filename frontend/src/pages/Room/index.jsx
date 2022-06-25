@@ -7,7 +7,6 @@ import Game from "pages/Room/Game";
 import GameSummary from "pages/Room/GameSummary";
 import GameEvents from "pages/Room/GameEvents";
 import Chat from "pages/Room/Chat";
-import OrderInput from "pages/Room/OrderInput";
 
 export const Room = () => {
   const { roomId } = useParams();
@@ -178,15 +177,12 @@ export const Room = () => {
                   users={users}
                   config={config}
                   playerId={playerId}
+                  players={game.players}
                   hand={game.hands[playerId]}
+                  send={send}
+                  wsclient={wsclient}
+                  isConnected={isConnected}
                 />
-                {isPlaying && (
-                  <OrderInput
-                    wsclient={wsclient}
-                    isConnected={isConnected}
-                    send={send}
-                  />
-                )}
               </div>
             </>
           )}

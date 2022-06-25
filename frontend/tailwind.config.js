@@ -14,6 +14,15 @@ module.exports = {
           3: "#187498",
         },
       },
+      animation: {
+        blink: "blink 300ms ease-in",
+      },
+      keyframes: {
+        blink: {
+          from: { border: "solid 2px white" },
+          to: { border: "solid 0px white" },
+        },
+      },
     },
   },
   plugins: [require("@tailwindcss/typography"), require("daisyui")],

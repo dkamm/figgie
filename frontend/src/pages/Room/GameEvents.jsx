@@ -15,7 +15,7 @@ const OrderAdded = ({ users, players, payload }) => {
   );
 };
 
-const OrderTraded = ({ users, players, payload }) => {
+export const OrderTraded = ({ users, players, payload }) => {
   const bidUser = users.byId[players[payload.bidder]];
   const askUser = users.byId[players[payload.asker]];
   return (

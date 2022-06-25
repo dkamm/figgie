@@ -37,7 +37,7 @@ export const GameSummary = ({ game, users }) => {
                 <Suit suit={s} styles={"text-lg"} />
               </th>
             ))}
-            <th className="text-left p-2">Earnings</th>
+            <th className="text-left pl-2">Earnings</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-600">
