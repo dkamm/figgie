@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 import Avatar from "components/Avatar";
 
@@ -13,15 +13,22 @@ export const SeatedUser = ({
   inGame,
   playerId = -1,
 }) => {
+  const editNameRef = useRef();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user.name);
+
+  useEffect(() => {
+    if (editing && editNameRef.current) {
+      editNameRef.current.focus();
+    }
+  }, [editing]);
 
   const backgroundColor = isSpectating ? "bg-base-100" : "bg-neutral";
 
   return (
     <tr className={`h-12 ${backgroundColor}`}>
-      <td className="p-2 text-right">
-        {isUser && "(You)"} {user.admin && "👑"}
+      <td className="w-4 pl-2 text-right items-center">
+        {isUser && "⭐"} {user.admin && "👑"}
       </td>
       <td className="p-2 text-left">
         {editing ? (
@@ -30,67 +37,69 @@ export const SeatedUser = ({
               className="block input input-sm input-bordered w-full mr-1"
               type="text"
               value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
-            />
-            <button
-              className="btn btn-sm btn-secondary"
-              onClick={() => setEditing(false)}
-            >
-              Cancel
-            </button>
-            <button
-              className="btn btn-sm btn-primary ml-1"
-              onClick={() => {
-                if (name != user.name) {
-                  changeName(name);
+              ref={editNameRef}
+              onBlur={(e) => {
+                if (e.target.value !== user.name) {
+                  changeName(e.target.value);
                 }
                 setEditing(false);
               }}
-            >
-              Save
-            </button>
+              onChange={(e) => {
+                setName(e.target.value);
+              }}
+              maxLength={16}
+            />
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <Avatar user={user} playerId={playerId} />
-            {isUser && !inGame && (
-              <button
-                className="btn btn-sm btn-primary btn-outline"
-                onClick={() => setEditing(true)}
-              >
-                Edit
-              </button>
-            )}
           </div>
         )}
       </td>
       <td className="p-2 text-left">{user.money}</td>
       <td className="p-2 pl-4 text-left">{user.rebuys}</td>
       <td>
-        {isAdmin && !inGame && !user.admin && (
+        {(isUser || isAdmin) && !inGame && (
           <div className={`dropdown dropdown-end ${backgroundColor}`}>
             <label tabIndex="0" className={`btn btn-sm m-1 ${backgroundColor}`}>
               …
             </label>
             <ul
               tabIndex="0"
-              className="dropdown-content menu p-2 shadow bg-neutral-focus rounded-box w-48"
+              className="z-100 dropdown-content menu p-2 shadow bg-neutral-focus rounded-box w-48"
             >
-              <li>
-                <a
-                  className="text-base-content"
-                  onClick={() => promoteUser(user.id)}
-                >
-                  Promote
-                </a>
-              </li>
-              <li>
-                <a className="text-red-400" onClick={() => kickUser(user.id)}>
-                  Kick
-                </a>
-              </li>
+              {isUser && (
+                <li>
+                  <a
+                    className="text-base-content"
+                    onClick={() => {
+                      setEditing(true);
+                    }}
+                  >
+                    Change name
+                  </a>
+                </li>
+              )}
+              {isAdmin && !user.admin && (
+                <>
+                  <li>
+                    <a
+                      className="text-base-content"
+                      onClick={() => promoteUser(user.id)}
+                    >
+                      Promote
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="text-red-400"
+                      onClick={() => kickUser(user.id)}
+                    >
+                      Kick
+                    </a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         )}

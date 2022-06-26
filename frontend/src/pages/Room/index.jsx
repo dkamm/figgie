@@ -134,7 +134,6 @@ export const Room = () => {
   }, [wsclient, handler, isConnected, joinRoom, name]);
 
   const isAdmin = userId && users.byId[userId].admin;
-  const isSpectating = userId && spectators.find((s) => s === userId);
   const playerId =
     userId && game && game.players.findIndex((p) => p === userId);
   const isPlaying = playerId !== -1;
@@ -156,7 +155,7 @@ export const Room = () => {
         <>
           {!inGame && (
             <>
-              <div className="col-start-2 col-span-4 row-start-1 row-span-4">
+              <div className="col-start-3 col-span-4 row-start-2 row-span-4">
                 <GameSummary game={game} users={users} />
                 {isAdmin && (
                   <button className="btn btn-accent mt-4" onClick={startGame}>
@@ -171,7 +170,7 @@ export const Room = () => {
           )}
           {inGame && (
             <>
-              <div className="col-start-2 col-span-4 h-full flex flex-col gap-y-2">
+              <div className="col-start-3 col-span-4 row-start-2 row-span-4">
                 <Game
                   game={game}
                   users={users}
@@ -187,14 +186,7 @@ export const Room = () => {
             </>
           )}
           {game && (
-            <div
-              className={
-                "col-start-2 col-span-4 " +
-                (isSpectating && inGame && !isAdmin
-                  ? "row-start-5 row-span-4"
-                  : "row-start-6 row-span-3")
-              }
-            >
+            <div className="col-start-1 col-span-2 row-start-5 row-span-4 min-h-0">
               <GameEvents
                 users={users}
                 events={game.events}
@@ -202,7 +194,7 @@ export const Room = () => {
               />
             </div>
           )}
-          <div className="col-start-6 col-span-3 row-start-1 row-span-4 min-h-0">
+          <div className="col-start-1 col-span-2 row-start-1 row-span-4 min-h-0">
             <Users
               userId={userId}
               seats={seats}
@@ -218,7 +210,7 @@ export const Room = () => {
               maxSpectators={config.maxSpectators}
             />
           </div>
-          <div className="col-start-6 col-span-3 row-start-5 row-span-4 min-h-0">
+          <div className="col-start-7 col-span-2 row-start-1 row-span-full">
             <Chat
               users={users}
               activityEvents={activityEvents}
