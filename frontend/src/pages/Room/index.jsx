@@ -8,6 +8,12 @@ import GameSummary from "pages/Room/GameSummary";
 import GameEvents from "pages/Room/GameEvents";
 import Chat from "pages/Room/Chat";
 
+import ClickSound from "assets/click.wav";
+import CashRegisterSound from "assets/cashregister.wav";
+
+const clickSound = new Audio(ClickSound);
+const cashRegisterSound = new Audio(CashRegisterSound);
+
 export const Room = () => {
   const { roomId } = useParams();
   const [searchParams] = useSearchParams();
@@ -53,6 +59,14 @@ export const Room = () => {
           dispatch({ type, payload });
           navigate("/");
           break;
+        case "orderAdded":
+          clickSound.play();
+          dispatch({ type, payload });
+          break;
+        case "orderTraded":
+          cashRegisterSound.play();
+          dispatch({ type, payload });
+          break;
         case "userJoined":
         case "userLeft":
         case "userMessaged":
@@ -63,8 +77,6 @@ export const Room = () => {
         case "userKicked":
         case "gameStarted":
         case "gameEnded":
-        case "orderAdded":
-        case "orderTraded":
           dispatch({ type, payload });
           break;
         case "orderRejected":
