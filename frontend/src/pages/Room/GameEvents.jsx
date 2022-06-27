@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 
 import Avatar from "components/Avatar";
 import Suit from "components/Suit";
@@ -43,6 +43,18 @@ export const OrderTraded = ({ users, players, payload }) => {
 export const GameEvents = ({ users, players, events }) => {
   const [mode, setMode] = useState("trades");
 
+  const [backscroll, setBackscroll] = useState(false);
+  const [backscrollEventCount, setBackscrollEventCount] = useState(0);
+  const hasNewEvents = backscrollEventCount != events.length;
+
+  const eventsRef = useRef();
+  const endRef = useRef();
+
+  const scrollToBottom = useCallback(() => {
+    setBackscroll(false);
+    setBackscrollEventCount(0);
+  }, [setBackscroll, setBackscrollEventCount]);
+
   const allEventsActive = mode === "allEvents" ? "tab-active" : "";
   const tradesActive = mode === "trades" ? "tab-active" : "";
 
@@ -53,23 +65,63 @@ export const GameEvents = ({ users, players, events }) => {
     return true;
   });
 
+  useEffect(() => {
+    if (!backscroll) {
+      // TODO: get this to work with behavior=smooth as the backscroll detection does not work with it.
+      // onScroll will be called multiple times with backscroll=false and atBottom=false as part of the animation.
+      endRef.current.scrollIntoView();
+    }
+  }, [backscroll, events]);
+
+  const onScroll = useCallback(() => {
+    const { scrollTop, scrollHeight, clientHeight } = eventsRef.current;
+    const atBottom = scrollTop + clientHeight >= scrollHeight;
+
+    if (!backscroll && !atBottom) {
+      setBackscroll(true);
+      setBackscrollEventCount(events.length);
+    }
+
+    if (backscroll && atBottom) {
+      setBackscroll(false);
+      setBackscrollEventCount(0);
+    }
+  }, [backscroll, setBackscroll, setBackscrollEventCount, events]);
+
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       <div className="flex justify-between items-end py-2">
         <strong className="block">Events</strong>
       </div>
       <div className="tabs">
-        <a className={`tab ${tradesActive}`} onClick={() => setMode("trades")}>
+        <a
+          className={`tab ${tradesActive}`}
+          onClick={() => {
+            setMode("trades");
+            setBackscroll(false);
+            setBackscrollEventCount(0);
+            scrollToBottom();
+          }}
+        >
           Trades
         </a>
         <a
           className={`tab ${allEventsActive}`}
-          onClick={() => setMode("allEvents")}
+          onClick={() => {
+            setMode("allEvents");
+            setBackscroll(false);
+            setBackscrollEventCount(0);
+            scrollToBottom();
+          }}
         >
           All Events
         </a>
       </div>
-      <div className="h-full overflow-y-scroll border border-base-content p-2">
+      <div
+        className="h-full overflow-y-scroll border border-base-content p-2"
+        onScroll={onScroll}
+        ref={eventsRef}
+      >
         {filteredEvents.length === 0 && (
           <div>
             {mode === "trades" && "No trades yet"}
@@ -101,6 +153,17 @@ export const GameEvents = ({ users, players, events }) => {
               return null;
           }
         })}
+        <div ref={endRef} />
+      </div>
+      <div className="w-full absolute bottom-8 z-20">
+        {backscroll && hasNewEvents && (
+          <button
+            onClick={scrollToBottom}
+            className="block btn btn-primary mx-auto"
+          >
+            New {mode === "trades" ? "Trades" : "Events"}
+          </button>
+        )}
       </div>
     </div>
   );
