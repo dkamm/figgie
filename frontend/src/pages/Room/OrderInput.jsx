@@ -34,26 +34,20 @@ export const OrderInput = ({ sendOrder }) => {
   );
 
   return (
-    <div>
-      <form className="w-full flex" onSubmit={onSubmit}>
-        <input
-          className="input input-bordered flex-grow"
-          type="text"
-          name="message"
-          placeholder="message"
-          autoComplete="off"
-          value={message}
-          onChange={onMessageChange}
-        />
-        <button
-          type="submit"
-          value="Submit"
-          className="btn btn-primary ml-1 p-4"
-        >
-          Submit
-        </button>
-      </form>
-    </div>
+    <form className="w-full mt-4 flex" onSubmit={onSubmit}>
+      <input
+        className="input input-bordered flex-grow"
+        type="text"
+        name="message"
+        placeholder="Enter an order here"
+        autoComplete="off"
+        value={message}
+        onChange={onMessageChange}
+      />
+      <button type="submit" value="Submit" className="btn btn-primary ml-1 p-4">
+        Submit
+      </button>
+    </form>
   );
 };
 

@@ -13,7 +13,7 @@ export const Hand = ({ hand }) => {
         <thead className="border-b border-gray-400">
           <tr className="h-8 p-2">
             {SUITS.map((suit) => (
-              <th className="pl-2 text-left" key={suit}>
+              <th className="text-center" key={suit}>
                 <Suit suit={suit} />
               </th>
             ))}
@@ -22,7 +22,7 @@ export const Hand = ({ hand }) => {
         <tbody>
           <tr className="h-16">
             {SUITS.map((suit) => (
-              <td className="pl-2 text-left" key={suit}>
+              <td className="text-center" key={suit}>
                 {hand[suit]}
               </td>
             ))}

@@ -4,6 +4,8 @@ import Avatar from "components/Avatar";
 import Suit from "components/Suit";
 import Timer from "pages/Room/Timer";
 import OrderInput from "pages/Room/OrderInput";
+import Hand from "pages/Room/Hand";
+import Hands from "pages/Room/Hands";
 import { OrderTraded } from "pages/Room/GameEvents";
 
 const Bid = ({ bid, suit, isSpectating, sendOrder }) => {
@@ -67,7 +69,8 @@ export const Game = ({
   users,
   players,
   playerId,
-  hand,
+  hands,
+  earnings,
   config,
   send,
   wsclient,
@@ -122,13 +125,13 @@ export const Game = ({
       <table className="table-fixed w-full border border-gray-400 border-collapse">
         <thead className="border-b border-gray-400">
           <tr className="p-2 h-8">
-            <th className="text-center"></th>
+            {isPlaying && <th className="text-center"></th>}
             <th className="text-center">Bidder</th>
             <th className="text-center">Bid</th>
             <th className="text-center">Suit</th>
             <th className="text-center">Ask</th>
             <th className="text-center">Asker</th>
-            <th className="text-center"></th>
+            {isPlaying && <th className="text-center"></th>}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-600">
@@ -143,17 +146,19 @@ export const Game = ({
 
             return (
               <tr key={suit} className="h-16">
-                <td className="text-center">
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    onClick={() => {
-                      sendOrder(1, suit, 1);
-                    }}
-                    disabled={bid === 0 || bidder === playerId || !bidUser}
-                  >
-                    Sell
-                  </button>
-                </td>
+                {isPlaying && (
+                  <td className="text-center">
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => {
+                        sendOrder(1, suit, 1);
+                      }}
+                      disabled={bid === 0 || bidder === playerId || !bidUser}
+                    >
+                      Sell
+                    </button>
+                  </td>
+                )}
                 <td className="text-center">
                   {bidUser ? <Avatar user={bidUser} playerId={bidder} /> : null}
                 </td>
@@ -176,7 +181,6 @@ export const Game = ({
                 <td className="text-center">
                   <div className="flex flex-col items-center">
                     <Suit suit={suit} styles="text-lg" block={true} />
-                    {playerId !== -1 && <div>{hand[suit]}</div>}
                   </div>
                 </td>
                 <td
@@ -198,42 +202,57 @@ export const Game = ({
                 <td className="text-center">
                   {askUser ? <Avatar user={askUser} playerId={asker} /> : null}
                 </td>
-                <td className="text-center">
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    disabled={ask == 0 || asker === playerId || !askUser}
-                    onClick={() => {
-                      sendOrder(100, suit, 0);
-                    }}
-                  >
-                    Take
-                  </button>
-                </td>
+                {isPlaying && (
+                  <td className="text-center">
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      disabled={ask == 0 || asker === playerId || !askUser}
+                      onClick={() => {
+                        sendOrder(100, suit, 0);
+                      }}
+                    >
+                      Take
+                    </button>
+                  </td>
+                )}
               </tr>
             );
           })}
         </tbody>
       </table>
-      {isPlaying && <OrderInput sendOrder={sendOrder} />}
-      {rejectReason && (
-        <div className="alert alert-error shadow-lg mt-2">
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current flex-shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{rejectReason}</span>
-          </div>
-        </div>
+      {isPlaying && (
+        <>
+          <Hand hand={hands[playerId]} />
+          <OrderInput sendOrder={sendOrder} />
+          {rejectReason && (
+            <div className="alert alert-error shadow-lg mt-2">
+              <div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="stroke-current flex-shrink-0 h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>{rejectReason}</span>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+      {!isPlaying && (
+        <Hands
+          hands={hands}
+          players={players}
+          users={users}
+          earnings={earnings}
+        />
       )}
       {trade && (
         <div className="alert shadow-lg mt-2 bg-neutral">

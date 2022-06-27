@@ -122,9 +122,10 @@ export const Room = () => {
     [send]
   );
 
-  //const leaveRoom = useCallback(() => {
-  //    send("leaveRoom", null)
-  //}, [send])
+  const leaveRoom = useCallback(() => {
+    send("leaveRoom", null);
+    navigate("/");
+  }, [send]);
 
   useEffect(() => {
     if (!isConnected) return;
@@ -140,7 +141,7 @@ export const Room = () => {
   const inGame = game && !game.done;
 
   return (
-    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-8 grid-rows-8 gap-x-4">
+    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-8 grid-rows-8 gap-x-4 gap-y-4">
       {loading && (
         <div className="row-start-2 row-end-4 col-start-2 col-end-4">
           Loading...
@@ -153,6 +154,20 @@ export const Room = () => {
       )}
       {!loading && !failure && (
         <>
+          <div className="col-start-3 col-span-4 row-start-1 row-span-1">
+            <div className="py-2 flex justify-between">
+              <div>
+                <strong>Room:</strong> {config.name} {config.private && "🔒"}
+              </div>{" "}
+              <button
+                className="btn btn-sm btn-error"
+                disabled={inGame}
+                onClick={leaveRoom}
+              >
+                Leave Room
+              </button>
+            </div>
+          </div>
           {!inGame && (
             <>
               <div className="col-start-3 col-span-4 row-start-2 row-span-4">
@@ -177,7 +192,8 @@ export const Room = () => {
                   config={config}
                   playerId={playerId}
                   players={game.players}
-                  hand={game.hands[playerId]}
+                  hands={game.hands}
+                  earnings={game.earnings}
                   send={send}
                   wsclient={wsclient}
                   isConnected={isConnected}
