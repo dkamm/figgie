@@ -1,6 +1,7 @@
 package app
 
 import (
+	"math/rand"
 	"time"
 )
 
@@ -97,17 +98,69 @@ func NewGame(id int, players []string, users map[string]*User) *Game {
 func (g *Game) Start() {
 	g.StartedAt = time.Now().UTC()
 
-	// TODO deal hand
-	g.Hands = [][]int{
-		{3, 2, 1, 0},
-		{3, 2, 1, 0},
-		{0, 1, 2, 3},
-		{0, 1, 2, 3},
-	}
-	g.Hands = g.Hands[:len(g.Players)]
-	g.GoalSuit = Club
-	g.GoalCount = 8
+	// 1. Pick common suit
+	commonSuit := Suit(rand.Intn(4))
+	g.GoalSuit = SisterSuit(commonSuit)
+	g.GoalCount = 10
 
+	// 2. Pick suit counts
+	suitCounts := []int{10, 10, 10, 10}
+	suitCounts[commonSuit] = 12
+
+	if rand.Intn(2) == 0 {
+		// Goal suit is 8
+		suitCounts[g.GoalSuit] = 8
+		g.GoalCount = 8
+	} else {
+		// Goal suit is 10
+		var suit Suit
+		for suit = 0; suit < 4; suit++ {
+			if suit == g.GoalSuit || suit == commonSuit {
+				continue
+			}
+			break
+		}
+		sisterSuit := SisterSuit(suit)
+		if rand.Intn(2) == 0 {
+			suitCounts[suit] = 8
+			suitCounts[sisterSuit] = 10
+		} else {
+			suitCounts[suit] = 10
+			suitCounts[sisterSuit] = 8
+		}
+	}
+
+	// 3. Create deck
+	deck := make([]Suit, 0, 40)
+	for suit, count := range suitCounts {
+		for i := 0; i < count; i++ {
+			deck = append(deck, Suit(suit))
+		}
+	}
+
+	// 4. Shuffle deck
+	rand.Shuffle(len(deck), func(i, j int) {
+		deck[i], deck[j] = deck[j], deck[i]
+	})
+
+	g.Hands = make([][]int, 0, len(g.Players))
+	handSize := 40 / len(g.Players)
+	if handSize > 10 {
+		handSize = 10
+	}
+
+	// 5. Deal cards
+	for p := 0; p < len(g.Players); p++ {
+		hand := []int{0, 0, 0, 0}
+		for i := 0; i < handSize; i++ {
+			s := deck[i]
+			hand[s]++
+		}
+		g.Hands = append(g.Hands, hand)
+		deck = deck[handSize:]
+	}
+
+	// Collect antes
 	for _, player := range g.Players {
 		user := g.users[player]
 		user.Money -= 50
