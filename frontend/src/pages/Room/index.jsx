@@ -151,6 +151,11 @@ export const Room = () => {
     userId && game && game.players.findIndex((p) => p === userId);
   const isPlaying = playerId !== -1;
   const inGame = game && !game.done;
+  const kicked = userId && users.byId[userId].left;
+
+  if (kicked) {
+    wsclient.removeMessageHandler(handler);
+  }
 
   return (
     <div className="h-[calc(100vh_-_7rem)] grid grid-cols-8 grid-rows-8 gap-x-4 gap-y-4">
@@ -248,6 +253,21 @@ export const Room = () => {
           </div>
         </>
       )}
+      <input type="checkbox" id="user-kicked-modal" className="modal-toggle" />
+      <div className={"modal " + (kicked ? "modal-open" : "")}>
+        <div className="modal-box">
+          <p className="py-4">You&apos;ve been kicked from this room!</p>
+          <div className="modal-action">
+            <label
+              htmlFor="user-kicked-modal"
+              className="btn"
+              onClick={() => navigate("/")}
+            >
+              Back to home
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

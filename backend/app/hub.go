@@ -673,6 +673,7 @@ func (h *Hub) Run() {
 
 				event := NewEvent(c.RoomId, &UserKickedPayload{UserId: p.UserId})
 				message, _ := json.Marshal(event)
+				h.sendToUserClientsInRoom(c.RoomId, p.UserId, message)
 				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 
 			case PingType:
