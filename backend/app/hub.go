@@ -543,6 +543,7 @@ func (h *Hub) Run() {
 				// Send full game results to everyone
 				event := NewEvent(c.RoomId, &GameEndedPayload{
 					Id:        g.Id,
+					Hands:     g.Hands,
 					Earnings:  g.Earnings,
 					Bonuses:   g.Bonuses,
 					GoalSuit:  g.GoalSuit,

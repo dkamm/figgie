@@ -118,11 +118,12 @@ type GameStartedRestrictedPayload = GameRestrictedView
 type GameStartedPayload = Game
 
 type GameEndedPayload struct {
-	Id        int   `json:"id"`
-	Earnings  []int `json:"earnings"`
-	Bonuses   []int `json:"bonuses"`
-	GoalSuit  Suit  `json:"goalSuit"`
-	GoalCount int   `json:"goalCount"`
+	Id        int     `json:"id"`
+	Hands     [][]int `json:"hands"`
+	Earnings  []int   `json:"earnings"`
+	Bonuses   []int   `json:"bonuses"`
+	GoalSuit  Suit    `json:"goalSuit"`
+	GoalCount int     `json:"goalCount"`
 }
 
 type PongPayload struct {
