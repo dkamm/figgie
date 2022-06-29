@@ -188,7 +188,8 @@ export const Room = () => {
           {!inGame && (
             <>
               <div className="col-start-3 col-span-4 row-start-2 row-span-4">
-                <GameSummary game={game} users={users} />
+                {game && <GameSummary game={game} users={users} />}
+                {!game && <div className="py-16">No games played yet</div>}
                 {isAdmin && (
                   <button className="btn btn-accent mt-4" onClick={startGame}>
                     Start New Game
