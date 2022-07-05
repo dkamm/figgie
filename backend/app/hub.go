@@ -9,6 +9,7 @@ import (
 )
 
 type Hub struct {
+	botManager        *BotManager
 	register          chan WSClientRegister
 	unregister        chan *WSClient
 	ticker            *time.Ticker
@@ -19,7 +20,7 @@ type Hub struct {
 }
 
 func NewHub() *Hub {
-	return &Hub{
+	hub := &Hub{
 		ticker:            time.NewTicker(time.Second),
 		receive:           make(chan WSClientMessage, 256),
 		register:          make(chan WSClientRegister),
@@ -28,10 +29,15 @@ func NewHub() *Hub {
 		rooms:             make(map[string]*Room),
 		disconnectTimeout: 2 * time.Second,
 	}
+	hub.botManager = NewBotManager(hub)
+	return hub
 }
 
 func (h *Hub) sendToUsersClientsInRoom(roomId string, userIds []string, message []byte) {
 	for _, userId := range userIds {
+		if userId == "" || userId[:3] == "bot" {
+			continue
+		}
 		clients, ok := h.clients[userId]
 		if !ok {
 			log.Println("something went wrong- clients not found")
@@ -52,7 +58,7 @@ func (h *Hub) sendToUserClientsInRoom(roomId string, userId string, message []by
 func (h *Hub) pickNewAdmin(room *Room) {
 	var nextAdmin *User
 	for _, seat := range room.seats() {
-		if seat != "" {
+		if seat != "" && seat[:3] != "bot" {
 			nextAdmin = room.users[seat]
 			break
 		}
@@ -76,8 +82,9 @@ func (h *Hub) pickNewAdmin(room *Room) {
 }
 
 func (h *Hub) Run() {
+	go h.botManager.Run()
 
-	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10, GameTime: 60})
+	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10, GameTime: 4 * 60})
 
 	for {
 		select {
@@ -473,12 +480,10 @@ func (h *Hub) Run() {
 				if room.game != nil {
 					id = room.game.Id + 1
 				}
-				// In practice, seats will not contain any empty strings but it's easier for testing
+
 				players := make([]string, 0, len(room.seats()))
 				for _, userId := range room.seats() {
-					if userId != "" {
-						players = append(players, userId)
-					}
+					players = append(players, userId)
 				}
 				g := NewGame(
 					id,
@@ -514,11 +519,22 @@ func (h *Hub) Run() {
 
 				// Send restricted view of game to each player
 				for _, player := range g.Players {
+					if player == "" {
+						continue
+					}
 					rv := g.restrictedView(player)
 					payload := GameStartedRestrictedPayload(*rv)
 					event := NewEvent(c.RoomId, &payload)
-					message, _ := json.Marshal(event)
-					h.sendToUserClientsInRoom(c.RoomId, player, message)
+					if player[:3] == "bot" {
+						// Send to bot
+						h.botManager.events <- BotEvent{
+							event:  event,
+							userId: player,
+						}
+					} else {
+						message, _ := json.Marshal(event)
+						h.sendToUserClientsInRoom(c.RoomId, player, message)
+					}
 				}
 
 				// Send full game to spectators
@@ -552,6 +568,13 @@ func (h *Hub) Run() {
 				message, _ := json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 
+				// Send to bots if applicable
+				if len(room.bots()) > 0 {
+					h.botManager.events <- BotEvent{
+						event: event,
+					}
+				}
+
 			case SendOrderType:
 				room, ok := h.rooms[c.RoomId]
 				if !ok {
@@ -571,6 +594,8 @@ func (h *Hub) Run() {
 
 				resp := g.HandleOrder(player, p.Price, p.Suit, p.Side)
 
+				bots := room.bots()
+
 				switch resp.Type {
 				case Added:
 					event := NewEvent(c.RoomId, &OrderAddedPayload{
@@ -582,6 +607,12 @@ func (h *Hub) Run() {
 					g.Events = append(g.Events, event)
 					message, _ := json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+					// Send to bots if applicable
+					if len(bots) > 0 {
+						h.botManager.events <- BotEvent{
+							event: event,
+						}
+					}
 				case Traded:
 					price := resp.restingPrice
 					var bidder, asker int
@@ -602,6 +633,12 @@ func (h *Hub) Run() {
 					g.Events = append(g.Events, event)
 					message, _ := json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+					// Send to bots if applicable
+					if len(bots) > 0 {
+						h.botManager.events <- BotEvent{
+							event: event,
+						}
+					}
 				case Rejected:
 					event := NewEvent(c.RoomId, &OrderRejectedPayload{
 						Reason: resp.rejectReason,
@@ -680,6 +717,90 @@ func (h *Hub) Run() {
 				event := NewEvent(c.RoomId, &PongPayload{Time: time.Now().Unix() * 1000})
 				message, _ := json.Marshal(event)
 				m.client.send <- message
+
+			case AddBotType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+
+				user, ok := room.users[m.client.userId]
+
+				if !user.Admin {
+					continue
+				}
+
+				p := &AddBotPayload{}
+				json.Unmarshal(c.Payload, p)
+
+				if room.seats()[p.Seat] != "" {
+					// seat is already taken. shouldn't get here
+					continue
+				}
+
+				botId := "bot_" + uuid.New().String()
+
+				bot := NewUser(
+					botId,
+					RandomBotName(),
+					1000,
+					p.Seat,
+					-1,
+					false,
+				)
+				room.users[bot.Id] = bot
+
+				log.Printf("adding bot %v: name=%v seat=%v", bot.Id, bot.Name, bot.Seat)
+
+				h.botManager.register <- BotRegister{
+					userId:   bot.Id,
+					roomId:   room.id,
+					playerId: p.Seat,
+				}
+
+				event := NewEvent(c.RoomId, &BotAddedPayload{
+					Id:     bot.Id,
+					Name:   bot.Name,
+					Seat:   p.Seat,
+					Money:  bot.Money,
+					Rebuys: bot.Rebuys,
+					Left:   bot.Left,
+				})
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
+			case RemoveBotType:
+				room, ok := h.rooms[c.RoomId]
+				if !ok {
+					continue
+				}
+
+				user, ok := room.users[m.client.userId]
+
+				if !user.Admin {
+					continue
+				}
+
+				p := &RemoveBotPayload{}
+				json.Unmarshal(c.Payload, p)
+
+				bot, ok := room.users[p.UserId]
+				if !ok {
+					continue
+				}
+				bot.Left = true
+
+				h.botManager.unregister <- BotUnregister{
+					userId: bot.Id,
+					roomId: room.id,
+				}
+
+				event := NewEvent(c.RoomId, &BotRemovedPayload{
+					UserId: bot.Id,
+				})
+				message, _ := json.Marshal(event)
+				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
+
 			}
 
 		case <-h.ticker.C:

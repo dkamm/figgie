@@ -22,6 +22,8 @@ const (
 	KickUserType                    = "kickUser"
 	EndGameType                     = "endGame"
 	PingType                        = "ping"
+	AddBotType                      = "addBot"
+	RemoveBotType                   = "removeBot"
 )
 
 type CreateRoomPayload struct {
@@ -72,6 +74,14 @@ type KickUserPayload struct {
 
 type EndGamePayload struct {
 	GameId int `json:"id"`
+}
+
+type AddBotPayload struct {
+	Seat int `json:"seat"`
+}
+
+type RemoveBotPayload struct {
+	UserId string `json:"userId"`
 }
 
 type Command struct {

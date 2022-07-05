@@ -77,6 +77,8 @@ export const Room = () => {
         case "userKicked":
         case "gameStarted":
         case "gameEnded":
+        case "botAdded":
+        case "botRemoved":
           dispatch({ type, payload });
           break;
         case "orderRejected":
@@ -138,6 +140,20 @@ export const Room = () => {
     send("leaveRoom", null);
     navigate("/");
   }, [send]);
+
+  const addBot = useCallback(
+    (seat) => {
+      send("addBot", { seat });
+    },
+    [send]
+  );
+
+  const removeBot = useCallback(
+    (userId) => {
+      send("removeBot", { userId });
+    },
+    [send]
+  );
 
   useEffect(() => {
     if (!isConnected) return;
@@ -238,7 +254,9 @@ export const Room = () => {
               startSpectating={startSpectating}
               changeName={changeName}
               promoteUser={promoteUser}
+              addBot={addBot}
               kickUser={kickUser}
+              removeBot={removeBot}
               isAdmin={isAdmin}
               inGame={inGame}
               maxSpectators={config.maxSpectators}

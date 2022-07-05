@@ -12,7 +12,9 @@ export const Users = ({
   startSpectating,
   changeName,
   promoteUser,
+  addBot,
   kickUser,
+  removeBot,
   isAdmin,
   inGame,
 }) => {
@@ -46,6 +48,7 @@ export const Users = ({
                     isSpectating={false}
                     promoteUser={promoteUser}
                     kickUser={kickUser}
+                    removeBot={removeBot}
                     inGame={inGame}
                     playerId={i}
                   />
@@ -59,6 +62,8 @@ export const Users = ({
                   startSpectating={startSpectating}
                   inGame={inGame}
                   isSpectator={false}
+                  isAdmin={isAdmin}
+                  addBot={addBot}
                 />
               );
             })}
@@ -73,6 +78,8 @@ export const Users = ({
                       startSpectating={startSpectating}
                       inGame={inGame}
                       isSpectator={true}
+                      isAdmin={isAdmin}
+                      addBot={addBot}
                     />
                   );
                 }
@@ -87,6 +94,7 @@ export const Users = ({
                     isSpectating={true}
                     promoteUser={promoteUser}
                     kickUser={kickUser}
+                    removeBot={removeBot}
                     inGame={inGame}
                   />
                 );

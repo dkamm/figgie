@@ -15,6 +15,16 @@ func NewRoom(id string, config RoomConfig) *Room {
 	}
 }
 
+func (r *Room) bots() []*User {
+	bots := make([]*User, 0, 4)
+	for userId, user := range r.users {
+		if userId[:3] == "bot" && !user.Left {
+			bots = append(bots, user)
+		}
+	}
+	return bots
+}
+
 func (r *Room) shiftSpectatorsDown(spectatorSeat int) {
 	for _, user := range r.users {
 		if !user.Left && user.SpectatorSeat > spectatorSeat {

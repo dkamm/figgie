@@ -65,6 +65,24 @@ const GameEnded = ({ payload }) => {
   return <div>Game {payload.id} ended!</div>;
 };
 
+const BotAdded = ({ payload, users, playerId }) => {
+  const user = users.byId[payload.id];
+  return (
+    <div>
+      <Avatar user={user} playerId={playerId} /> was added!
+    </div>
+  );
+};
+
+const BotRemoved = ({ payload, users, playerId }) => {
+  const user = users.byId[payload.userId];
+  return (
+    <div>
+      <Avatar user={user} playerId={playerId} /> was removed!
+    </div>
+  );
+};
+
 export const ActivityEvent = ({ users, activityEvent }) => {
   const { type, payload, playerId } = activityEvent;
   switch (type) {
@@ -97,6 +115,12 @@ export const ActivityEvent = ({ users, activityEvent }) => {
 
     case "gameEnded":
       return <GameEnded payload={payload} />;
+
+    case "botAdded":
+      return <BotAdded payload={payload} users={users} playerId={playerId} />;
+
+    case "botRemoved":
+      return <BotRemoved payload={payload} users={users} playerId={playerId} />;
 
     default:
       console.error("invalid activity event type", type);

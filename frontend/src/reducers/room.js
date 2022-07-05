@@ -59,6 +59,51 @@ export const roomReducer = (state = {}, { type, payload }) => {
         spectators,
       };
     }
+    case "botAdded": {
+      let seats = [...state.seats];
+      seats[payload.seat] = payload.id;
+      return {
+        ...state,
+        users: {
+          byId: {
+            ...state.users.byId,
+            [payload.id]: payload,
+          },
+          allIds: [...state.users.allIds, payload.id],
+        },
+        activityEvents: [
+          ...state.activityEvents,
+          { type, payload, playerId: payload.seat },
+        ],
+        seats,
+      };
+    }
+    case "botRemoved": {
+      let seats = [...state.seats];
+      const seat = seats.findIndex((s) => s === payload.userId);
+      if (seat !== -1) {
+        // Bot removed from seat
+        seats = [...seats.slice(0, seat), "", ...seats.slice(seat + 1)];
+      }
+      return {
+        ...state,
+        users: {
+          byId: {
+            ...state.users.byId,
+            [payload.id]: {
+              ...state.users.byId[payload.id],
+              left: true,
+            },
+          },
+          allIds: [...state.users.allIds, payload.id],
+        },
+        activityEvents: [
+          ...state.activityEvents,
+          { type, payload, playerId: seat },
+        ],
+        seats,
+      };
+    }
     case "userLeft": {
       let seats = [...state.seats];
       let spectators = [...state.spectators];
@@ -245,13 +290,15 @@ export const roomReducer = (state = {}, { type, payload }) => {
         ...state.users,
         byId: { ...state.users.byId },
       };
-      payload.players.forEach((userId, i) => {
-        const user = users.byId[userId];
-        users.byId[userId] = {
-          ...user,
-          money: user.money + payload.earnings[i],
-        };
-      });
+      payload.players
+        .filter((s) => s)
+        .forEach((userId, i) => {
+          const user = users.byId[userId];
+          users.byId[userId] = {
+            ...user,
+            money: user.money + payload.earnings[i],
+          };
+        });
       return {
         ...state,
         users,
@@ -264,13 +311,15 @@ export const roomReducer = (state = {}, { type, payload }) => {
         ...state.users,
         byId: { ...state.users.byId },
       };
-      state.game.players.forEach((userId, i) => {
-        const user = users.byId[userId];
-        users.byId[userId] = {
-          ...user,
-          money: user.money + payload.bonuses[i],
-        };
-      });
+      state.game.players
+        .filter((s) => s)
+        .forEach((userId, i) => {
+          const user = users.byId[userId];
+          users.byId[userId] = {
+            ...user,
+            money: user.money + payload.bonuses[i],
+          };
+        });
       return {
         ...state,
         users,

@@ -24,21 +24,23 @@ export const Hands = ({ hands, players, users, earnings }) => {
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-600">
-          {players.map((userId, playerId) => {
-            return (
-              <tr key={playerId} className="h-12">
-                <td className="pl-2 text-left">
-                  <Avatar user={users.byId[userId]} playerId={playerId} />
-                </td>
-                {SUITS.map((suit) => (
-                  <td className="pl-2 text-left" key={suit}>
-                    {hands[playerId][suit]}
+          {players
+            .filter((p) => p)
+            .map((userId, playerId) => {
+              return (
+                <tr key={playerId} className="h-12">
+                  <td className="pl-2 text-left">
+                    <Avatar user={users.byId[userId]} playerId={playerId} />
                   </td>
-                ))}
-                <td className="pl-2 text-left">{earnings[playerId]}</td>
-              </tr>
-            );
-          })}
+                  {SUITS.map((suit) => (
+                    <td className="pl-2 text-left" key={suit}>
+                      {hands[playerId][suit]}
+                    </td>
+                  ))}
+                  <td className="pl-2 text-left">{earnings[playerId]}</td>
+                </tr>
+              );
+            })}
         </tbody>
       </table>
     </div>

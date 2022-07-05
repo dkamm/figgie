@@ -10,6 +10,7 @@ export const SeatedUser = ({
   changeName,
   promoteUser,
   kickUser,
+  removeBot,
   inGame,
   playerId = -1,
 }) => {
@@ -24,6 +25,7 @@ export const SeatedUser = ({
   }, [editing]);
 
   const backgroundColor = isSpectating ? "bg-base-100" : "bg-neutral";
+  const isBot = user.id.slice(0, 3) === "bot";
 
   return (
     <tr className={`h-12 ${backgroundColor}`}>
@@ -68,6 +70,19 @@ export const SeatedUser = ({
               tabIndex="0"
               className="z-100 dropdown-content menu p-2 shadow bg-neutral-focus rounded-box w-48"
             >
+              {" "}
+              {isAdmin && isBot && (
+                <li>
+                  <a
+                    className="text-base-content"
+                    onClick={() => {
+                      removeBot(user.id);
+                    }}
+                  >
+                    Remove bot
+                  </a>
+                </li>
+              )}
               {isUser && (
                 <li>
                   <a
@@ -80,7 +95,7 @@ export const SeatedUser = ({
                   </a>
                 </li>
               )}
-              {isAdmin && !user.admin && (
+              {isAdmin && !user.admin && !isBot && (
                 <>
                   <li>
                     <a

@@ -24,7 +24,7 @@ export const Home = () => {
             name: roomName,
             maxSpectators: maxSpectators,
             private: privateRoom,
-            gameTime: 4 * 60,
+            gameTime: 60,
           },
         },
       });

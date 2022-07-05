@@ -28,6 +28,8 @@ const (
 	OrderTradedType                     = "orderTraded"
 	OrderRejectedType                   = "orderRejected"
 	PongType                            = "pong"
+	BotAddedType                        = "botAdded"
+	BotRemovedType                      = "botRemoved"
 )
 
 type RoomCreatedPayload struct{}
@@ -128,6 +130,19 @@ type GameEndedPayload struct {
 
 type PongPayload struct {
 	Time int64 `json:"time"`
+}
+
+type BotAddedPayload struct {
+	Id     string `json:"id"`
+	Name   string `json:"name"`
+	Seat   int    `json:"seat"`
+	Money  int    `json:"money"`
+	Rebuys int    `json:"rebuys"`
+	Left   bool   `json:"left"`
+}
+
+type BotRemovedPayload struct {
+	UserId string `json:"userId"`
 }
 
 type Event struct {
@@ -234,6 +249,14 @@ func NewEvent(roomId string, payload interface{}) *Event {
 	case *PongPayload:
 		eventType = PongType
 		raw, _ = json.Marshal(payload.(*PongPayload))
+
+	case *BotAddedPayload:
+		eventType = BotAddedType
+		raw, _ = json.Marshal(payload.(*BotAddedPayload))
+
+	case *BotRemovedPayload:
+		eventType = BotRemovedType
+		raw, _ = json.Marshal(payload.(*BotRemovedPayload))
 
 	default:
 		log.Printf("invalid payload")

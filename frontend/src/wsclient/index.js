@@ -62,7 +62,7 @@ export const ReconnectingWebsocket = (url) => {
         send({ type: "ping" });
         lastPingTime = new Date().getTime();
         pingCount += 1;
-      }, 3000);
+      }, 60000);
     };
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);

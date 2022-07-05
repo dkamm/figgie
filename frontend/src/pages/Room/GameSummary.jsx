@@ -8,6 +8,9 @@ import { SUITS } from "constants";
 export const GameSummary = ({ game, users }) => {
   const playersEarnings = [];
   for (let i = 0; i < game.players.length; i++) {
+    if (!game.players[i]) {
+      continue;
+    }
     playersEarnings.push({
       playerId: i,
       userId: game.players[i],

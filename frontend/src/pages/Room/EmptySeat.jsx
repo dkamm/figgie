@@ -4,6 +4,8 @@ export const EmptySeat = ({
   seat,
   takeSeat,
   startSpectating,
+  addBot,
+  isAdmin,
   inGame,
   isSpectator,
 }) => {
@@ -37,7 +39,30 @@ export const EmptySeat = ({
       </td>
       <td className="p-2 text-left"></td>
       <td className="p-2 text-left"></td>
-      <td className="p-2 text-left"></td>
+      <td>
+        {isAdmin && !isSpectator && (
+          <div className={`dropdown dropdown-end`}>
+            <label tabIndex="0" className={`btn btn-sm m-1`}>
+              …
+            </label>
+            <ul
+              tabIndex="0"
+              className="z-100 dropdown-content menu p-2 shadow bg-neutral-focus rounded-box w-48"
+            >
+              <li>
+                <a
+                  className="text-base-content"
+                  onClick={() => {
+                    addBot(seat);
+                  }}
+                >
+                  Add Bot
+                </a>
+              </li>
+            </ul>
+          </div>
+        )}
+      </td>
     </tr>
   );
 };

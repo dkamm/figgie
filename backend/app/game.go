@@ -162,6 +162,9 @@ func (g *Game) Start() {
 
 	// Collect antes
 	for _, player := range g.Players {
+		if player == "" {
+			continue
+		}
 		user := g.users[player]
 		user.Money -= 50
 	}
