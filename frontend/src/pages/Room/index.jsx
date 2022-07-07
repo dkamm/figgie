@@ -136,10 +136,12 @@ export const Room = () => {
     [send]
   );
 
-  const leaveRoom = useCallback(() => {
-    send("leaveRoom", null);
-    navigate("/");
-  }, [send]);
+  const leaveRoom = useCallback(
+    (disconnectAllClients) => {
+      send("leaveRoom", { disconnectAllClients });
+    },
+    [send]
+  );
 
   const addBot = useCallback(
     (seat) => {
@@ -159,8 +161,12 @@ export const Room = () => {
     if (!isConnected) return;
     wsclient.addMessageHandler(handler);
     joinRoom(name);
-    return () => wsclient.removeMessageHandler(handler);
-  }, [wsclient, handler, isConnected, joinRoom, name]);
+    return () => {
+      wsclient.removeMessageHandler(handler);
+      // We send an extra message here if user leaves room and disconnects all clients, but I'm not going to worry about it right now
+      leaveRoom(false);
+    };
+  }, [wsclient, handler, isConnected, joinRoom, leaveRoom, name]);
 
   const isAdmin = userId && users.byId[userId].admin;
   const playerId =
@@ -195,7 +201,10 @@ export const Room = () => {
               <button
                 className="btn btn-sm btn-error"
                 disabled={inGame}
-                onClick={leaveRoom}
+                onClick={() => {
+                  leaveRoom(true);
+                  navigate("/");
+                }}
               >
                 Leave Room
               </button>

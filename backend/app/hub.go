@@ -321,10 +321,21 @@ func (h *Hub) Run() {
 				if !ok {
 					continue
 				}
-				m.client.roomId = c.RoomId
 
 				user, ok := room.users[m.client.userId]
 				if !ok {
+					continue
+				}
+
+				// Remove this client from the room
+				m.client.roomId = ""
+
+				var p LeaveRoomPayload
+				json.Unmarshal(c.Payload, &p)
+
+				// Don't remove the user from the room if he has other clients in the room and didn't force disconnect all of them
+				clients := h.clients[m.client.userId]
+				if len(clients) > 0 && !p.DisconnectAllClients {
 					continue
 				}
 
@@ -336,13 +347,12 @@ func (h *Hub) Run() {
 				// Mark the user as having left the room
 				user.Left = true
 
-				// Notify the user's clients that the user has left
+				// Notify the user's other clients that the user has left
 				event := NewEvent(c.RoomId, &LeftRoomPayload{})
 				message, _ := json.Marshal(event)
 				h.sendToUserClientsInRoom(c.RoomId, m.client.userId, message)
 
 				// Move the user's clients out of the room
-				clients, _ := h.clients[m.client.userId]
 				for _, client := range clients {
 					client.roomId = ""
 				}

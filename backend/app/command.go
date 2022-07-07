@@ -40,6 +40,10 @@ type JoinRoomPayload struct {
 	Name string `json:"name,omitempty"`
 }
 
+type LeaveRoomPayload struct {
+	DisconnectAllClients bool `json:"disconnectAllClients"`
+}
+
 type SendMessagePayload struct {
 	Message string `json:"message"`
 }
