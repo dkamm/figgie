@@ -8,7 +8,7 @@ module.exports = {
     filename: "[name].js",
     chunkFilename: "[id]-[chunkhash].js",
     clean: true,
-    publicPath: "/",
+    publicPath: "/static/",
   },
   module: {
     rules: [
