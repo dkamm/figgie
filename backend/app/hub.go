@@ -133,6 +133,9 @@ func (h *Hub) Run() {
 				continue
 			}
 			user, ok := room.users[client.userId]
+			if !ok {
+				continue
+			}
 			user.DisconnectedAt = time.Now()
 
 		case m := <-h.receive:
@@ -165,12 +168,18 @@ func (h *Hub) Run() {
 								numPlayers++
 							}
 						}
+						numSpectators := 0
+						for _, spectator := range room.spectators() {
+							if spectator != "" {
+								numSpectators++
+							}
+						}
 						summaries = append(summaries, RoomSummary{
 							RoomId:        room.id,
 							RoomName:      room.config.Name,
 							AdminName:     adminName,
 							NumPlayers:    numPlayers,
-							NumSpectators: len(room.activeUserIds()),
+							NumSpectators: numSpectators,
 							MaxSpectators: room.config.MaxSpectators,
 						})
 					}
@@ -256,13 +265,21 @@ func (h *Hub) Run() {
 						log.Printf("something went wrong. could not assign seat room=%s", room.id)
 						continue
 					}
+
+					numActiveNonBotUsers := 0
+					for _, u := range activeUsers {
+						if u.Id[:3] != "bot" {
+							numActiveNonBotUsers++
+						}
+					}
+
 					user = NewUser(
 						m.client.userId,
 						name,
 						1000,
 						seat,
 						spectatorSeat,
-						len(activeUsers) == 0,
+						numActiveNonBotUsers == 0,
 					)
 					room.users[user.Id] = user
 				} else {
@@ -333,9 +350,15 @@ func (h *Hub) Run() {
 				var p LeaveRoomPayload
 				json.Unmarshal(c.Payload, &p)
 
-				// Don't remove the user from the room if he has other clients in the room and didn't force disconnect all of them
 				clients := h.clients[m.client.userId]
-				if len(clients) > 0 && !p.DisconnectAllClients {
+				numRoomClients := 0
+				for _, c := range clients {
+					if c.roomId != "" {
+						numRoomClients++
+					}
+				}
+				// Don't remove the user from the room if he has other clients in the room and didn't force disconnect all of them
+				if numRoomClients > 0 && !p.DisconnectAllClients {
 					continue
 				}
 
@@ -820,9 +843,20 @@ func (h *Hub) Run() {
 			for _, room := range h.rooms {
 				for _, user := range room.users {
 					if !user.Left && !user.DisconnectedAt.IsZero() && now.Sub(user.DisconnectedAt) > h.disconnectTimeout {
+
+						log.Printf("disconnecting %v from %v", user.Id, room.id)
+
 						user.Left = true
 
-						// Notify other users in the room that a user has left
+						// Take the user's clients out of the room
+						clients, ok := h.clients[user.Id]
+						if ok {
+							for _, client := range clients {
+								client.roomId = ""
+							}
+						}
+
+						// Notify other users in the room that the user has left
 						otherUserIds := room.otherActiveUserIds(user.Id)
 						event := NewEvent(room.id, &UserLeftPayload{UserId: user.Id})
 						message, _ := json.Marshal(event)
