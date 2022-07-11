@@ -7,6 +7,8 @@ const CHAR2SUIT = {
   d: 3,
 };
 
+const OrderMatcher = /(?<firstTwo>(cb|cs|sb|ss|hb|hs|db|ds))(?<price>\d+)$/;
+
 export const OrderInput = ({ sendOrder }) => {
   const [message, setMessage] = useState("");
 
@@ -21,14 +23,17 @@ export const OrderInput = ({ sendOrder }) => {
     (e) => {
       e.preventDefault();
 
-      const tokens = message.split(" ");
+      const trimmed = message.replaceAll(" ", "");
 
-      const suit = CHAR2SUIT[tokens[0][0]];
-      const side = tokens[1][0] === "b" ? 0 : 1;
-      const price = parseInt(tokens[2]);
-
-      sendOrder(price, suit, side);
-      setMessage("");
+      const orderMatch = trimmed.match(OrderMatcher);
+      if (orderMatch) {
+        const suit = CHAR2SUIT[orderMatch.groups.firstTwo[0]];
+        const side = orderMatch.groups.firstTwo[1] === "b" ? 0 : 1;
+        const price = parseInt(orderMatch.groups.price);
+        sendOrder(price, suit, side);
+        setMessage("");
+        return;
+      }
     },
     [sendOrder, message, setMessage]
   );
