@@ -3,7 +3,6 @@ package main
 import (
 	"embed"
 	"flag"
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
@@ -40,6 +39,10 @@ func (h *catchAllHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+func NewUserId() string {
+	return "user_" + app.SecureRandomString(16)
+}
+
 func main() {
 	hub := app.NewHub()
 	go hub.Run()
@@ -50,7 +53,7 @@ func main() {
 		userId, ok := session.Values["userId"].(string)
 
 		if !ok {
-			userId = "user_" + uuid.New().String()
+			userId = NewUserId()
 			log.Printf("could not find user id in session, created a new one %s", userId)
 		}
 
@@ -75,7 +78,7 @@ func main() {
 		_, ok := session.Values["userId"]
 
 		if !ok {
-			session.Values["userId"] = "user_" + uuid.New().String()
+			session.Values["userId"] = NewUserId()
 
 			err := session.Save(r, w)
 			if err != nil {

@@ -3,8 +3,8 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -147,6 +147,8 @@ func (h *Hub) Run() {
 				continue
 			}
 
+			c.RoomId = strings.ToLower(c.RoomId)
+
 			log.Printf("userId=%s, roomId=%s, commandType=%s", m.client.userId, m.client.roomId, c.Type)
 
 			switch c.Type {
@@ -211,7 +213,13 @@ func (h *Hub) Run() {
 			case CreateRoomType:
 				p := &CreateRoomPayload{}
 				json.Unmarshal(c.Payload, &p)
-				id := "room_" + uuid.New().String()
+				var id string
+				for {
+					id = SecureRandomString(6)
+					if _, ok := h.rooms[id]; !ok {
+						break
+					}
+				}
 				room := NewRoom(id, p.Config)
 				h.rooms[id] = room
 				user := NewUser(m.client.userId, p.UserName, 1000, 0, -1, true)
@@ -771,7 +779,7 @@ func (h *Hub) Run() {
 					continue
 				}
 
-				botId := "bot_" + uuid.New().String()
+				botId := "bot_" + SecureRandomString(16)
 
 				bot := NewUser(
 					botId,
