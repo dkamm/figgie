@@ -244,15 +244,13 @@ export const Room = () => {
               </div>
             </>
           )}
-          {game && (
-            <div className="col-start-1 col-span-2 row-start-5 row-span-4 min-h-0">
-              <GameEvents
-                users={users}
-                events={game.events}
-                players={game.players}
-              />
-            </div>
-          )}
+          <div className="col-start-1 col-span-2 row-start-5 row-span-4 min-h-0">
+            <GameEvents
+              users={users}
+              events={game ? game.events : []}
+              players={game ? game.players : []}
+            />
+          </div>
           <div className="col-start-1 col-span-2 row-start-1 row-span-4 min-h-0">
             <Users
               userId={userId}

@@ -30,7 +30,7 @@ export const SeatedUser = ({
   return (
     <tr className={`h-12 ${backgroundColor}`}>
       <td className="w-4 pl-2 text-right items-center">
-        {isUser && "⭐"} {user.admin && "👑"}
+        {isUser && "⭐"} {user.admin && "👑"} {isBot && "🤖"}
       </td>
       <td className="p-2 text-left">
         {editing ? (

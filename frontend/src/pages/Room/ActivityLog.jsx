@@ -41,9 +41,11 @@ export const ActivityLog = ({
       ref={chatRef}
       onScroll={onScroll}
     >
-      {activityEvents.map((activityEvent, id) => (
-        <ActivityEvent key={id} users={users} activityEvent={activityEvent} />
-      ))}
+      {!activityEvents.length && <div>No messages yet</div>}
+      {activityEvents.length > 0 &&
+        activityEvents.map((activityEvent, id) => (
+          <ActivityEvent key={id} users={users} activityEvent={activityEvent} />
+        ))}
       <div ref={endRef} />
     </div>
   );
