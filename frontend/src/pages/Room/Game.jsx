@@ -87,7 +87,6 @@ export const Game = ({
       const { type, payload } = message;
       if (type === "orderRejected") {
         setRejectReason(payload.reason);
-        setTrade(null);
       } else if (type === "orderTraded") {
         setTrade(payload);
         setRejectReason("");
@@ -225,7 +224,7 @@ export const Game = ({
           <Hand hand={hands[playerId]} />
           <OrderInput sendOrder={sendOrder} />
           {rejectReason && (
-            <div className="alert alert-error shadow-lg mt-2">
+            <div className="alert alert-error shadow-lg mt-4">
               <div>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -255,7 +254,7 @@ export const Game = ({
         />
       )}
       {trade && (
-        <div className="alert shadow-lg mt-2 bg-neutral">
+        <div className="alert shadow-lg mt-4 bg-neutral">
           <div>
             <svg
               xmlns="http://www.w3.org/2000/svg"

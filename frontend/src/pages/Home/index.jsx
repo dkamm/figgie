@@ -79,12 +79,16 @@ export const Home = () => {
                 type="text"
                 name="name"
                 placeholder="Name"
+                minLength={1}
+                maxLength={16}
               />
               <input
                 className="block input input-bordered"
                 type="text"
                 name="roomCode"
                 placeholder="Room Code"
+                minLength={6}
+                maxLength={6}
               />
               <button className="block btn btn-primary" type="submit">
                 Join Room

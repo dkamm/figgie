@@ -180,24 +180,70 @@ export const Room = () => {
   }
 
   return (
-    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-8 grid-rows-8 gap-x-4 gap-y-4">
+    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-8 grid-rows-2 gap-x-4">
       {loading && (
-        <div className="row-start-2 row-end-4 col-start-2 col-end-4">
+        <div className="row-start-1 row-span-1 col-start-2 col-end-4">
           Loading...
         </div>
       )}
       {!loading && failure && (
-        <div className="row-start-2 row-end-4 col-start-2 col-end-4">
+        <div className="row-start-1 row-span-1 col-start-2 col-end-4">
           {failure}
         </div>
       )}
       {!loading && !failure && (
         <>
-          <div className="col-start-3 col-span-4 row-start-1 row-span-1">
-            <div className="py-2 flex justify-between">
-              <div>
-                <strong>Room:</strong> {config.name} {config.private && "🔒"}
+          <div className="row-start-1 row-span-full col-start-3 col-span-4 flex flex-col justify-between">
+            <div className="flex flex-col gap-x-2">
+              <div className="py-2 flex justify-between">
+                <div>
+                  <strong>Room Name:</strong> {config.name}{" "}
+                  {config.private && "🔒"}
+                </div>
+                <div>
+                  <strong>Room Code:</strong> {roomId}
+                </div>
               </div>{" "}
+              {!inGame && (
+                <>
+                  {game && <GameSummary game={game} users={users} />}
+                  {!game && <div className="py-16">No games played yet</div>}
+                  {isAdmin && (
+                    <button
+                      className="btn btn-accent mt-4 w-48"
+                      onClick={startGame}
+                    >
+                      Start New Game
+                    </button>
+                  )}
+                  {!isAdmin && (
+                    <div className="mt-4">
+                      Waiting for admin to start game...
+                    </div>
+                  )}
+                </>
+              )}
+              {inGame && (
+                <>
+                  <Game
+                    game={game}
+                    users={users}
+                    config={config}
+                    playerId={playerId}
+                    players={game.players}
+                    hands={game.hands}
+                    earnings={game.earnings}
+                    send={send}
+                    wsclient={wsclient}
+                    isConnected={isConnected}
+                  />
+                </>
+              )}
+            </div>
+            <div className="flex justify-end gap-x-2">
+              <button className="btn btn-sm btn-outline" onClick={() => {}}>
+                Keyboard Inputs
+              </button>
               <button
                 className="btn btn-sm btn-error"
                 disabled={inGame}
@@ -210,48 +256,7 @@ export const Room = () => {
               </button>
             </div>
           </div>
-          {!inGame && (
-            <>
-              <div className="col-start-3 col-span-4 row-start-2 row-span-4">
-                {game && <GameSummary game={game} users={users} />}
-                {!game && <div className="py-16">No games played yet</div>}
-                {isAdmin && (
-                  <button className="btn btn-accent mt-4" onClick={startGame}>
-                    Start New Game
-                  </button>
-                )}
-                {!isAdmin && (
-                  <div className="mt-4">Waiting for admin to start game...</div>
-                )}
-              </div>
-            </>
-          )}
-          {inGame && (
-            <>
-              <div className="col-start-3 col-span-4 row-start-2 row-span-4">
-                <Game
-                  game={game}
-                  users={users}
-                  config={config}
-                  playerId={playerId}
-                  players={game.players}
-                  hands={game.hands}
-                  earnings={game.earnings}
-                  send={send}
-                  wsclient={wsclient}
-                  isConnected={isConnected}
-                />
-              </div>
-            </>
-          )}
-          <div className="col-start-1 col-span-2 row-start-5 row-span-4 min-h-0">
-            <GameEvents
-              users={users}
-              events={game ? game.events : []}
-              players={game ? game.players : []}
-            />
-          </div>
-          <div className="col-start-1 col-span-2 row-start-1 row-span-4 min-h-0">
+          <div className="col-start-1 col-span-2 row-start-1 row-span-1 min-h-0">
             <Users
               userId={userId}
               seats={seats}
@@ -267,6 +272,13 @@ export const Room = () => {
               isAdmin={isAdmin}
               inGame={inGame}
               maxSpectators={config.maxSpectators}
+            />
+          </div>
+          <div className="col-start-1 col-span-2 row-start-2 row-span-1 min-h-0">
+            <GameEvents
+              users={users}
+              events={game ? game.events : []}
+              players={game ? game.players : []}
             />
           </div>
           <div className="col-start-7 col-span-2 row-start-1 row-span-full">
