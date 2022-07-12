@@ -12,22 +12,26 @@ type Hub struct {
 	botManager        *BotManager
 	register          chan WSClientRegister
 	unregister        chan *WSClient
-	ticker            *time.Ticker
+	disconnectTicker  *time.Ticker
+	staleRoomsTicker  *time.Ticker
 	receive           chan WSClientMessage
 	clients           map[string][]*WSClient // userId -> []*WSClient
 	rooms             map[string]*Room
 	disconnectTimeout time.Duration
+	staleRoomTimeout  time.Duration
 }
 
 func NewHub() *Hub {
 	hub := &Hub{
-		ticker:            time.NewTicker(time.Second),
+		disconnectTicker:  time.NewTicker(time.Second),
+		staleRoomsTicker:  time.NewTicker(10 * time.Second),
 		receive:           make(chan WSClientMessage, 256),
 		register:          make(chan WSClientRegister),
 		unregister:        make(chan *WSClient),
 		clients:           make(map[string][]*WSClient),
 		rooms:             make(map[string]*Room),
 		disconnectTimeout: 2 * time.Second,
+		staleRoomTimeout:  5 * time.Second,
 	}
 	hub.botManager = NewBotManager(hub)
 	return hub
@@ -242,8 +246,9 @@ func (h *Hub) Run() {
 				}
 
 				activeUsers := room.activeUsers()
+				bots := room.bots()
 
-				if len(activeUsers) >= 4+room.config.MaxSpectators {
+				if len(activeUsers)+len(bots) >= 4+room.config.MaxSpectators {
 					event := NewEvent(c.RoomId, &JoinFailedPayload{Reason: "This room is full"})
 					message, _ := json.Marshal(event)
 					m.client.send <- message
@@ -274,26 +279,24 @@ func (h *Hub) Run() {
 						continue
 					}
 
-					numActiveNonBotUsers := 0
-					for _, u := range activeUsers {
-						if u.Id[:3] != "bot" {
-							numActiveNonBotUsers++
-						}
-					}
-
 					user = NewUser(
 						m.client.userId,
 						name,
 						1000,
 						seat,
 						spectatorSeat,
-						numActiveNonBotUsers == 0,
+						len(activeUsers) == 0,
 					)
 					room.users[user.Id] = user
 				} else {
 					// Reset disconnectedAt/left fields for this user in case of a reconnect
 					user.DisconnectedAt = time.Time{}
 					user.Left = false
+				}
+
+				if !room.emptyTime.IsZero() {
+					// Clear empty time
+					room.emptyTime = time.Time{}
 				}
 
 				g := room.game
@@ -388,15 +391,33 @@ func (h *Hub) Run() {
 					client.roomId = ""
 				}
 
-				// Notify other users in the room that a user has left
 				otherUserIds := room.otherActiveUserIds(m.client.userId)
-				event = NewEvent(c.RoomId, &UserLeftPayload{UserId: m.client.userId})
-				message, _ = json.Marshal(event)
-				h.sendToUsersClientsInRoom(c.RoomId, otherUserIds, message)
 
-				if user.Admin {
-					// Promote another user to be admin if the admin left
-					h.pickNewAdmin(room)
+				if len(otherUserIds) == 0 {
+					// Room just became empty
+					room.emptyTime = time.Now()
+					log.Printf("room %v became empty", room.id)
+
+					// Remove bots from the room if applicable
+					bots := room.bots()
+					if len(bots) > 0 {
+						for _, bot := range bots {
+							h.botManager.unregister <- BotUnregister{
+								userId: bot.Id,
+								roomId: room.id,
+							}
+						}
+					}
+				} else {
+					// Notify other users in the room that a user has left
+					event = NewEvent(c.RoomId, &UserLeftPayload{UserId: m.client.userId})
+					message, _ = json.Marshal(event)
+					h.sendToUsersClientsInRoom(c.RoomId, otherUserIds, message)
+
+					if user.Admin {
+						// Promote another user to be admin if the admin left
+						h.pickNewAdmin(room)
+					}
 				}
 
 			case SendMessageType:
@@ -856,7 +877,24 @@ func (h *Hub) Run() {
 
 			}
 
-		case <-h.ticker.C:
+		case <-h.staleRoomsTicker.C:
+			now := time.Now()
+
+			// Check for stale rooms
+			staleRoomIds := make([]string, 0)
+			for _, room := range h.rooms {
+				if !room.emptyTime.IsZero() && now.Sub(room.emptyTime) > h.staleRoomTimeout {
+					staleRoomIds = append(staleRoomIds, room.id)
+				}
+			}
+
+			// Remove stale rooms
+			for _, roomId := range staleRoomIds {
+				log.Printf("removing stale room %v", roomId)
+				delete(h.rooms, roomId)
+			}
+
+		case <-h.disconnectTicker.C:
 			now := time.Now()
 
 			// Check for disconnected users
@@ -876,16 +914,33 @@ func (h *Hub) Run() {
 							}
 						}
 
-						// Notify other users in the room that the user has left
 						otherUserIds := room.otherActiveUserIds(user.Id)
-						event := NewEvent(room.id, &UserLeftPayload{UserId: user.Id})
-						message, _ := json.Marshal(event)
-						h.sendToUsersClientsInRoom(room.id, otherUserIds, message)
+						if len(otherUserIds) == 0 {
+							// Room just became empty
+							room.emptyTime = now
+							log.Printf("room %v became empty", room.id)
 
-						if user.Admin {
-							// Promote new user as admin if user was admin
-							user.Admin = false
-							h.pickNewAdmin(room)
+							// Remove bots from the room if applicable
+							bots := room.bots()
+							if len(bots) > 0 {
+								for _, bot := range bots {
+									h.botManager.unregister <- BotUnregister{
+										userId: bot.Id,
+										roomId: room.id,
+									}
+								}
+							}
+						} else {
+							// Notify other users in the room that the user has left
+							event := NewEvent(room.id, &UserLeftPayload{UserId: user.Id})
+							message, _ := json.Marshal(event)
+							h.sendToUsersClientsInRoom(room.id, otherUserIds, message)
+
+							if user.Admin {
+								// Promote new user as admin if user was admin
+								user.Admin = false
+								h.pickNewAdmin(room)
+							}
 						}
 					}
 				}

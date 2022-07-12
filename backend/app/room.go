@@ -1,10 +1,15 @@
 package app
 
+import (
+	"time"
+)
+
 type Room struct {
-	id     string
-	config RoomConfig
-	users  map[string]*User
-	game   *Game
+	id        string
+	config    RoomConfig
+	users     map[string]*User
+	game      *Game
+	emptyTime time.Time
 }
 
 func NewRoom(id string, config RoomConfig) *Room {
@@ -74,7 +79,7 @@ func (r *Room) admin() *User {
 func (r *Room) activeUsers() []*User {
 	users := make([]*User, 0, len(r.users))
 	for _, user := range r.users {
-		if !user.Left {
+		if user.Id[:4] == "user" && !user.Left {
 			users = append(users, user)
 		}
 	}
@@ -92,7 +97,7 @@ func (r *Room) allUsers() []*User {
 func (r *Room) activeUserIds() []string {
 	ids := make([]string, 0, len(r.users))
 	for id, user := range r.users {
-		if !user.Left {
+		if id[:4] == "user" && !user.Left {
 			ids = append(ids, id)
 		}
 	}
@@ -102,7 +107,7 @@ func (r *Room) activeUserIds() []string {
 func (r *Room) otherActiveUserIds(userId string) []string {
 	ids := make([]string, 0, len(r.users))
 	for id, user := range r.users {
-		if id != userId && !user.Left {
+		if id[:4] == "user" && id != userId && !user.Left {
 			ids = append(ids, id)
 		}
 	}
