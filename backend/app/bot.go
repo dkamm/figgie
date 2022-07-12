@@ -9,21 +9,23 @@ import (
 )
 
 type BotOrder struct {
-	userId string
-	roomId string
-	gameId int
-	price  int
-	suit   Suit
-	side   Side
+	userId   string
+	roomId   string
+	gameId   int
+	price    int
+	suit     Suit
+	side     Side
+	tradeNum int
 }
 
 type Bot struct {
-	manager  *BotManager
-	id       string
-	roomId   string
-	playerId int
-	gameId   int
-	inGame   bool
+	manager       *BotManager
+	id            string
+	roomId        string
+	playerId      int
+	gameId        int
+	inGame        bool
+	numGameTrades int
 
 	money  int
 	rebuys int
@@ -189,21 +191,23 @@ func (b *Bot) placeOrders() {
 		if bid < buyPrice {
 			// queue buy
 			orders = append(orders, BotOrder{
-				userId: b.id,
-				roomId: b.roomId,
-				price:  buyPrice,
-				suit:   goalSuit,
-				side:   Bid,
+				userId:   b.id,
+				roomId:   b.roomId,
+				price:    buyPrice,
+				suit:     goalSuit,
+				side:     Bid,
+				tradeNum: b.numGameTrades,
 			})
 		}
 		if ask == 0 || ask > sellPrice {
 			// queue sell
 			orders = append(orders, BotOrder{
-				userId: b.id,
-				roomId: b.roomId,
-				price:  sellPrice,
-				suit:   goalSuit,
-				side:   Ask,
+				userId:   b.id,
+				roomId:   b.roomId,
+				price:    sellPrice,
+				suit:     goalSuit,
+				side:     Ask,
+				tradeNum: b.numGameTrades,
 			})
 		}
 	}
@@ -228,6 +232,7 @@ func (b *Bot) handleEvent(e *Event) {
 
 		b.gameId = p.Id
 		b.inGame = true
+		b.numGameTrades = 0
 		b.pendingOrders = b.pendingOrders[:0]
 
 		b.money -= 50
@@ -271,6 +276,7 @@ func (b *Bot) handleEvent(e *Event) {
 		var p OrderTradedPayload
 		json.Unmarshal(e.Payload, &p)
 
+		b.numGameTrades++
 		b.books = [][]int{
 			{0, 0, 0, 0},
 			{0, 0, 0, 0},
@@ -294,6 +300,7 @@ func (b *Bot) handleEvent(e *Event) {
 		json.Unmarshal(e.Payload, &p)
 
 		b.inGame = false
+		b.numGameTrades = 0
 		b.pendingOrders = b.pendingOrders[:0]
 	}
 }

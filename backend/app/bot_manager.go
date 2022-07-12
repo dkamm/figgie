@@ -76,7 +76,6 @@ func (bm *BotManager) Run() {
 
 		case be := <-bm.events:
 			bots, _ := bm.bots[be.event.RoomId]
-			log.Printf("bots %v", bots)
 			for _, bot := range bots {
 				if be.userId == "" || be.userId == bot.id {
 					bot.events <- be.event
@@ -85,9 +84,10 @@ func (bm *BotManager) Run() {
 
 		case bo := <-bm.orders:
 			payload, _ := json.Marshal(&SendOrderPayload{
-				Price: bo.price,
-				Suit:  bo.suit,
-				Side:  bo.side,
+				Price:    bo.price,
+				Suit:     bo.suit,
+				Side:     bo.side,
+				TradeNum: bo.tradeNum,
 			})
 
 			message, _ := json.Marshal(&Command{
