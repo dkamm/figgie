@@ -95,12 +95,14 @@ export const Game = ({
     [setRejectReason, setTrade]
   );
 
+  const numTrades = game.events.filter((e) => e.type === "orderTraded").length;
+
   const sendOrder = useCallback(
     (price, suit, side) => {
-      send("sendOrder", { price, suit, side });
+      send("sendOrder", { price, suit, side, tradeNum: numTrades });
       setRejectReason("");
     },
-    [send, setRejectReason]
+    [send, setRejectReason, numTrades]
   );
 
   useEffect(() => {
@@ -222,7 +224,11 @@ export const Game = ({
       {isPlaying && (
         <>
           <Hand hand={hands[playerId]} />
-          <OrderInput sendOrder={sendOrder} />
+          <OrderInput
+            sendOrder={sendOrder}
+            books={game.books}
+            setRejectReason={setRejectReason}
+          />
           {rejectReason && (
             <div className="alert alert-error shadow-lg mt-4">
               <div>

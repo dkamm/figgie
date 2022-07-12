@@ -63,9 +63,10 @@ type ChangeNamePayload struct {
 type RebuyInPayload struct{}
 
 type SendOrderPayload struct {
-	Price int  `json:"price"`
-	Suit  Suit `json:"suit"`
-	Side  Side `json:"side"`
+	Price    int  `json:"price"`
+	Suit     Suit `json:"suit"`
+	Side     Side `json:"side"`
+	TradeNum int  `json:"tradeNum"`
 }
 
 type PromoteUserPayload struct {

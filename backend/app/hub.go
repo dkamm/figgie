@@ -633,6 +633,18 @@ func (h *Hub) Run() {
 					continue
 				}
 
+				numTrades := 0
+				for _, event := range g.Events {
+					if event.Type == OrderTradedType {
+						numTrades++
+					}
+				}
+
+				// Ignore order if trade num is wrong
+				if p.TradeNum != numTrades {
+					continue
+				}
+
 				resp := g.HandleOrder(player, p.Price, p.Suit, p.Side)
 
 				bots := room.bots()

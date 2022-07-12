@@ -241,9 +241,87 @@ export const Room = () => {
               )}
             </div>
             <div className="flex justify-end gap-x-2">
-              <button className="btn btn-sm btn-outline" onClick={() => {}}>
-                Keyboard Inputs
-              </button>
+              <div>
+                <label
+                  htmlFor="input-help-modal"
+                  className="btn btn-sm btn-outline modal-button"
+                >
+                  Input Cheatsheet
+                </label>
+                <input
+                  type="checkbox"
+                  id="input-help-modal"
+                  className="modal-toggle"
+                />
+                <div className="modal">
+                  <div className="modal-box relative w-1/2 max-w-4xl">
+                    <label
+                      htmlFor="input-help-modal"
+                      className="btn btn-sm btn-circle absolute right-2 top-2"
+                    >
+                      ✕
+                    </label>
+                    <div>
+                      <div>
+                        Suits: c = club, s = spade, h = heart, d = diamond
+                      </div>
+                    </div>
+                    <table className="table-fixed w-full border border-gray-400 border-collapse mt-4">
+                      <thead className="text-left">
+                        <tr>
+                          <th className="p-2">Description</th>
+                          <th className="p-2">Format</th>
+                          <th className="p-2">Example</th>
+                          <th className="p-2">Mnenomic</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-left">
+                        <tr>
+                          <td className="pl-2">Send a buy order</td>
+                          <td className="pl-2">[suit]b[price]</td>
+                          <td className="pl-2">hb5</td>
+                          <td className="pl-2">&quot;hearts bid 5&quot;</td>
+                        </tr>
+                        <tr>
+                          <td className="pl-2">Send an ask order</td>
+                          <td className="pl-2">[suit]a[price]</td>
+                          <td className="pl-2">ha5</td>
+                          <td className="pl-2">&quot;hearts ask 5&quot;</td>
+                        </tr>
+                        <tr>
+                          <td className="pl-2">Penny up the best bid</td>
+                          <td className="pl-2">u[suit]</td>
+                          <td className="pl-2">uh</td>
+                          <td className="pl-2">&quot;penny up hearts&quot;</td>
+                        </tr>
+                        <tr>
+                          <td className="pl-2">Penny down the best ask</td>
+                          <td className="pl-2">d[suit]</td>
+                          <td className="pl-2">dh</td>
+                          <td className="pl-2">
+                            &quot;penny down hearts&quot;
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="pl-2">Take the best ask</td>
+                          <td className="pl-2">t[suit]</td>
+                          <td className="pl-2">th</td>
+                          <td className="pl-2">&quot;take hearts&quot;</td>
+                        </tr>
+                        <tr>
+                          <td className="pl-2">Sell to the best bid</td>
+                          <td className="pl-2">s[suit]</td>
+                          <td className="pl-2">sh</td>
+                          <td className="pl-2">&quot;sell hearts&quot;</td>
+                        </tr>
+                        <tr>
+                          <td className="p-1" colSpan={4} />
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
               <button
                 className="btn btn-sm btn-error"
                 disabled={inGame}

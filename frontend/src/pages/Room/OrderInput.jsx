@@ -7,9 +7,12 @@ const CHAR2SUIT = {
   d: 3,
 };
 
-const OrderMatcher = /(?<firstTwo>(cb|cs|sb|ss|hb|hs|db|ds))(?<price>\d+)$/;
+const SendOrderMatcher =
+  /^(?<firstTwo>(cb|ca|sb|sa|hb|ha|db|da))(?<price>\d+)$/;
+const PennyMatcher = /^(?<direction>(u|d))(?<suit>(c|s|h|d))$/;
+const TakeMatcher = /^(?<direction>(t|s))(?<suit>(c|s|h|d))$/;
 
-export const OrderInput = ({ sendOrder }) => {
+export const OrderInput = ({ sendOrder, books, setRejectReason }) => {
   const [message, setMessage] = useState("");
 
   const onMessageChange = useCallback(
@@ -25,7 +28,7 @@ export const OrderInput = ({ sendOrder }) => {
 
       const trimmed = message.replaceAll(" ", "");
 
-      const orderMatch = trimmed.match(OrderMatcher);
+      const orderMatch = trimmed.match(SendOrderMatcher);
       if (orderMatch) {
         const suit = CHAR2SUIT[orderMatch.groups.firstTwo[0]];
         const side = orderMatch.groups.firstTwo[1] === "b" ? 0 : 1;
@@ -34,8 +37,56 @@ export const OrderInput = ({ sendOrder }) => {
         setMessage("");
         return;
       }
+
+      const pennyMatch = trimmed.match(PennyMatcher);
+      if (pennyMatch) {
+        const suit = CHAR2SUIT[pennyMatch.groups.suit];
+        const book = books[suit];
+        let price;
+        let side;
+
+        if (pennyMatch.groups.direction === "u") {
+          price = book[0] + 1;
+          side = 0;
+        } else {
+          price = book[2] - 1;
+          side = 1;
+        }
+        sendOrder(price, suit, side);
+        setMessage("");
+        return;
+      }
+
+      const takeMatch = trimmed.match(TakeMatcher);
+      if (takeMatch) {
+        const suit = CHAR2SUIT[takeMatch.groups.suit];
+        const book = books[suit];
+        let price;
+        let side;
+        if (takeMatch.groups.direction === "t") {
+          if (!book[2]) {
+            setRejectReason("No ask order to take");
+            setMessage("");
+            return;
+          }
+          price = 100;
+          side = 0;
+        } else {
+          if (!book[0]) {
+            setRejectReason("No bid order to sell to");
+            setMessage("");
+            return;
+          }
+          price = 1;
+          side = 1;
+        }
+        sendOrder(price, suit, side);
+        setMessage("");
+        return;
+      }
+      setRejectReason("Invalid command- check the cheatsheet");
     },
-    [sendOrder, message, setMessage]
+    [sendOrder, message, setMessage, books, setRejectReason]
   );
 
   return (
