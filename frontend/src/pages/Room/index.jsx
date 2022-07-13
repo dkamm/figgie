@@ -347,7 +347,7 @@ export const Room = () => {
               addBot={addBot}
               kickUser={kickUser}
               removeBot={removeBot}
-              isAdmin={isAdmin}
+              adminView={isAdmin}
               inGame={inGame}
               maxSpectators={config.maxSpectators}
             />

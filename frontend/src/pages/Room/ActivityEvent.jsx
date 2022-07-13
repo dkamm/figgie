@@ -58,11 +58,19 @@ const UserKicked = ({ users, payload, playerId }) => {
 };
 
 const GameStarted = ({ payload }) => {
-  return <div>Game {payload.id} started!</div>;
+  return (
+    <div>
+      <strong>Game {payload.id} started!</strong>
+    </div>
+  );
 };
 
 const GameEnded = ({ payload }) => {
-  return <div>Game {payload.id} ended!</div>;
+  return (
+    <div>
+      <strong>Game {payload.id} ended!</strong>
+    </div>
+  );
 };
 
 const BotAdded = ({ payload, users, playerId }) => {

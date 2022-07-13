@@ -4,8 +4,8 @@ import Avatar from "components/Avatar";
 
 export const SeatedUser = ({
   user,
-  isUser,
-  isAdmin,
+  isYou,
+  adminView,
   isSpectating,
   changeName,
   promoteUser,
@@ -26,11 +26,12 @@ export const SeatedUser = ({
 
   const backgroundColor = isSpectating ? "bg-base-100" : "bg-neutral";
   const isBot = user.id.slice(0, 3) === "bot";
+  const isAdmin = user.admin;
 
   return (
     <tr className={`h-12 ${backgroundColor}`}>
       <td className="w-4 pl-2 text-right items-center">
-        {isUser && "⭐"} {user.admin && "👑"} {isBot && "🤖"}
+        {isYou && "⭐"} {isAdmin && "👑"} {isBot && "🤖"}
       </td>
       <td className="p-2 text-left">
         {editing ? (
@@ -61,9 +62,13 @@ export const SeatedUser = ({
       <td className="p-2 text-left">{user.money}</td>
       <td className="p-2 pl-4 text-left">{user.rebuys}</td>
       <td>
-        {(isUser || isAdmin) && !inGame && (
+        {(isYou || adminView) && (
           <div className={`dropdown dropdown-end ${backgroundColor}`}>
-            <label tabIndex="0" className={`btn btn-sm m-1 ${backgroundColor}`}>
+            <label
+              tabIndex="0"
+              className={`btn btn-sm m-1 ${backgroundColor}`}
+              disabled={inGame}
+            >
               …
             </label>
             <ul
@@ -71,7 +76,7 @@ export const SeatedUser = ({
               className="z-100 dropdown-content menu p-2 shadow bg-neutral-focus rounded-box w-48"
             >
               {" "}
-              {isAdmin && isBot && (
+              {adminView && isBot && (
                 <li>
                   <a
                     className="text-base-content"
@@ -83,7 +88,7 @@ export const SeatedUser = ({
                   </a>
                 </li>
               )}
-              {isUser && (
+              {isYou && (
                 <li>
                   <a
                     className="text-base-content"
@@ -95,7 +100,7 @@ export const SeatedUser = ({
                   </a>
                 </li>
               )}
-              {isAdmin && !user.admin && !isBot && (
+              {adminView && !isAdmin && !isBot && (
                 <>
                   <li>
                     <a

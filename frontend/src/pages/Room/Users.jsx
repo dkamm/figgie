@@ -15,7 +15,7 @@ export const Users = ({
   addBot,
   kickUser,
   removeBot,
-  isAdmin,
+  adminView,
   inGame,
 }) => {
   return (
@@ -42,8 +42,8 @@ export const Users = ({
                   <SeatedUser
                     key={i}
                     user={user}
-                    isUser={user.id === userId}
-                    isAdmin={isAdmin}
+                    isYou={user.id === userId}
+                    adminView={adminView}
                     changeName={changeName}
                     isSpectating={false}
                     promoteUser={promoteUser}
@@ -61,8 +61,8 @@ export const Users = ({
                   takeSeat={takeSeat}
                   startSpectating={startSpectating}
                   inGame={inGame}
-                  isSpectator={false}
-                  isAdmin={isAdmin}
+                  isSpectatorSeat={false}
+                  adminView={adminView}
                   addBot={addBot}
                 />
               );
@@ -77,8 +77,8 @@ export const Users = ({
                       takeSeat={takeSeat}
                       startSpectating={startSpectating}
                       inGame={inGame}
-                      isSpectator={true}
-                      isAdmin={isAdmin}
+                      isSpectatorSeat={true}
+                      adminView={adminView}
                       addBot={addBot}
                     />
                   );
@@ -88,8 +88,8 @@ export const Users = ({
                   <SeatedUser
                     key={spectator}
                     user={user}
-                    isUser={user.id === userId}
-                    isAdmin={isAdmin}
+                    isYou={user.id === userId}
+                    adminView={adminView}
                     changeName={changeName}
                     isSpectating={true}
                     promoteUser={promoteUser}

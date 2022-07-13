@@ -5,16 +5,16 @@ export const EmptySeat = ({
   takeSeat,
   startSpectating,
   addBot,
-  isAdmin,
+  adminView,
   inGame,
-  isSpectator,
+  isSpectatorSeat,
 }) => {
-  const color = isSpectator ? "" : "bg-neutral";
+  const color = isSpectatorSeat ? "" : "bg-neutral";
   return (
     <tr className={`h-12 ${color}`}>
       <td className="p-2 text-right"></td>
       <td className="p-2 text-left">
-        {!isSpectator && (
+        {!isSpectatorSeat && (
           <button
             className="btn btn-sm btn-secondary btn-outline p-2"
             onClick={() => {
@@ -25,7 +25,7 @@ export const EmptySeat = ({
             Take Seat
           </button>
         )}
-        {isSpectator && (
+        {isSpectatorSeat && (
           <button
             className="block btn btn-sm btn-accent btn-outline"
             onClick={() => {
@@ -40,9 +40,9 @@ export const EmptySeat = ({
       <td className="p-2 text-left"></td>
       <td className="p-2 text-left"></td>
       <td>
-        {isAdmin && !isSpectator && (
+        {adminView && !isSpectatorSeat && (
           <div className={`dropdown dropdown-end`}>
-            <label tabIndex="0" className={`btn btn-sm m-1`}>
+            <label tabIndex="0" className={`btn btn-sm m-1`} disabled={inGame}>
               …
             </label>
             <ul
