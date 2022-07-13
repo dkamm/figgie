@@ -14,8 +14,11 @@ import { createRoot } from "react-dom/client";
 import { ReconnectingWebsocket } from "wsclient";
 import { WS_URL } from "config";
 import { WSClientProvider } from "./contexts/WSContext";
-import { Rooms } from "pages/Rooms";
-import { Room } from "pages/Room";
+import Rooms from "pages/Rooms";
+import Room from "pages/Room";
+import Howto from "pages/Howto";
+import About from "pages/About";
+import Changelog from "pages/Changelog";
 
 const wsclient = ReconnectingWebsocket(WS_URL);
 
@@ -26,7 +29,9 @@ const App = () => {
     <div className="w-full h-screen flex flex-col">
       <header
         id="header"
-        className={"w-full z-50 border-b border-gray-400 sticky top-0"}
+        className={
+          "w-full z-50 border-b border-gray-400 sticky top-0 bg-base-100"
+        }
       >
         <nav
           className={
@@ -34,7 +39,7 @@ const App = () => {
           }
         >
           <Link to={"/"}>
-            <span className={"ml-1"}>Figgie</span>
+            <strong className={"ml-1"}>Figgie</strong>
           </Link>
           <ul className={"flex space-x-4"}>
             <li>
@@ -44,6 +49,34 @@ const App = () => {
                 onClick={onClickNavLink}
               >
                 Home
+              </Link>
+            </li>
+            <li>
+              <Link
+                className={"block hover:opacity-75"}
+                to={"/howto"}
+                onClick={onClickNavLink}
+              >
+                How To
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                className={"block hover:opacity-75"}
+                to={"/about"}
+                onClick={onClickNavLink}
+              >
+                About
+              </Link>
+            </li>
+            <li>
+              <Link
+                className={"block hover:opacity-75"}
+                to={"/changelog"}
+                onClick={onClickNavLink}
+              >
+                Changelog
               </Link>
             </li>
           </ul>
@@ -68,6 +101,9 @@ root.render(
               <Route path={":roomId"} element={<Room />} />
               <Route index element={<Navigate replace to={"/"} />} />
             </Route>
+            <Route path={"howto"} element={<Howto />} />
+            <Route path={"about"} element={<About />} />
+            <Route path={"changelog"} element={<Changelog />} />
             <Route index element={<Home />} />
           </Route>
         </Routes>
