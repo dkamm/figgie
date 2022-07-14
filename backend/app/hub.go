@@ -88,8 +88,6 @@ func (h *Hub) pickNewAdmin(room *Room) {
 func (h *Hub) Run() {
 	go h.botManager.Run()
 
-	h.rooms["test"] = NewRoom("test", RoomConfig{Name: "test", Private: false, MaxSpectators: 10, GameTime: 4 * 60})
-
 	for {
 		select {
 		case r := <-h.register:
