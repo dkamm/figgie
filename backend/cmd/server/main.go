@@ -11,10 +11,14 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/caddyserver/certmagic"
+
 	"github.com/dkamm/figgie/backend/app"
 )
 
 var addrFlag = flag.String("addr", ":8080", "http service address")
+
+var mode = "development"
 
 var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 
@@ -23,7 +27,11 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
-		return origin == "http://localhost:3000" || origin == "http://localhost:8080"
+		if mode == "production" {
+			return origin == "https://figgie.app"
+		} else {
+			return origin == "http://localhost:3000" || origin == "http://localhost:8080"
+		}
 	},
 }
 
@@ -44,6 +52,8 @@ func NewUserId() string {
 }
 
 func main() {
+	flag.Parse()
+
 	hub := app.NewHub()
 	go hub.Run()
 
@@ -92,9 +102,19 @@ func main() {
 	})
 	r.PathPrefix("/").Handler(&catchAllHandler{})
 
-	log.Printf("serving on %v", *addrFlag)
-	err := http.ListenAndServe(*addrFlag, r)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+	if mode == "production" {
+		certmagic.DefaultACME.Agreed = true
+		certmagic.DefaultACME.Email = "admin@figgie.app"
+		certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
+		err := certmagic.HTTPS([]string{"figgie.app", "www.figgie.app"}, r)
+		if err != nil {
+			log.Fatal("Error starting https server: ", err)
+		}
+	} else {
+		log.Printf("serving on %v", *addrFlag)
+		err := http.ListenAndServe(*addrFlag, r)
+		if err != nil {
+			log.Fatal("ListenAndServe: ", err)
+		}
 	}
 }

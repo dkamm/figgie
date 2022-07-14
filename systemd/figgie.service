@@ -1,0 +1,13 @@
+[Unit]
+Description=Figgie server
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/opt/figgie/figgieserver
+Environment=SESSION_KEY=your-session-key-here
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Alias=figgie.service
