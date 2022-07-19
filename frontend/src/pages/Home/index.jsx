@@ -56,7 +56,7 @@ export const Home = () => {
   }, [wsclient, isConnected, handler]);
 
   return (
-    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-4 grid-rows-6 gap-x-8">
+    <div className="h-[calc(100vh_-_7rem)] w-full grid grid-cols-4 grid-rows-6 gap-x-8">
       <div className="row-start-2 row-span-4 col-start-2 col-span-2">
         <Rooms />
       </div>

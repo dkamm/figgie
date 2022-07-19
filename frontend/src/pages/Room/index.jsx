@@ -180,7 +180,7 @@ export const Room = () => {
   }
 
   return (
-    <div className="h-[calc(100vh_-_7rem)] grid grid-cols-8 grid-rows-2 gap-x-4">
+    <div className="h-[calc(100vh_-_7rem)] w-full grid grid-cols-8 grid-rows-2 gap-x-4">
       {loading && (
         <div className="row-start-1 row-span-1 col-start-2 col-end-4">
           Loading...
