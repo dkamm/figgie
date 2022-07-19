@@ -31,7 +31,7 @@ func NewHub() *Hub {
 		clients:           make(map[string][]*WSClient),
 		rooms:             make(map[string]*Room),
 		disconnectTimeout: 2 * time.Second,
-		staleRoomTimeout:  5 * time.Second,
+		staleRoomTimeout:  5 * time.Minute,
 	}
 	hub.botManager = NewBotManager(hub)
 	return hub
