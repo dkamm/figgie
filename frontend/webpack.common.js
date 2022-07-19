@@ -22,7 +22,7 @@ module.exports = {
         use: ["style-loader", "css-loader", "postcss-loader"],
       },
       {
-        test: /\.wav$/,
+        test: /\.(wav|png)$/,
         type: "asset/resource",
       },
     ],
