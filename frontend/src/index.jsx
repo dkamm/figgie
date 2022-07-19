@@ -39,7 +39,20 @@ const App = () => {
           }
         >
           <Link to={"/"}>
-            <strong className={"ml-1"}>Figgie</strong>
+            <div className="flex items-center gap-x-1">
+              <div>
+                <span
+                  className="text-xl text-center h-10 font-['sans-serif']"
+                  role="img"
+                  ariaLabel="figgie logo"
+                >
+                  ♦️
+                </span>
+              </div>
+              <div>
+                <strong className={"block"}>Figgie</strong>
+              </div>
+            </div>
           </Link>
           <ul className={"flex space-x-4"}>
             <li>
