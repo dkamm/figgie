@@ -20,6 +20,12 @@ The binary is completely self contained so there is no need for docker or nginx 
 
 I use systemd to run the server on an instance.
 
+## Architecture
+
+![Image](assets/architecture.png "Architecture")
+
+The state of all rooms is centralized in the Hub. Each Bot runs in its own goroutine and sends actions to/receives events from the Bot Manager.
+
 ## AI
 
 The bot AI is an implementation of the "fundamentalist" from https://arxiv.org/pdf/2110.00879.pdf.  The fundamentalist is very simplistic and only takes observed card counts into account to estimate the probability of each of the 12 possible decks and expected values of each suit.
