@@ -33,6 +33,7 @@ type Bot struct {
 	stop   chan bool
 
 	pendingOrders []BotOrder
+	nextSendTime  time.Time
 
 	r         float64
 	books     [][]int
@@ -94,21 +95,23 @@ func NewBot(id string, roomId string, playerId int, r float64, money int, manage
 }
 
 func (b *Bot) Run() {
+	time.Sleep(time.Duration(rand.Intn(300)) * time.Millisecond)
 	log.Printf("starting %v: player=%v", b.id, b.playerId)
 
-	interval := 2000 + rand.Intn(500)
-	ticker := time.NewTicker(time.Duration(interval) * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(300) * time.Millisecond)
 
 	for {
 		select {
 		case <-ticker.C:
-			if len(b.pendingOrders) == 0 {
+			now := time.Now()
+			if len(b.pendingOrders) == 0 || now.Before(b.nextSendTime) {
 				continue
 			}
 			order := b.pendingOrders[0]
 			log.Printf("sending order for %v: order=%v pendingOrders=%v", b.id, order, b.pendingOrders[1:])
 			b.manager.orders <- order
 			b.pendingOrders = b.pendingOrders[1:]
+			b.nextSendTime = now.Add(time.Duration(3000+rand.Intn(5000)) * time.Millisecond)
 		case event := <-b.events:
 			b.handleEvent(event)
 		case <-b.stop:
@@ -232,6 +235,7 @@ func (b *Bot) handleEvent(e *Event) {
 		b.inGame = true
 		b.numGameTrades = 0
 		b.pendingOrders = b.pendingOrders[:0]
+		b.nextSendTime = time.Now().Add(time.Duration(3000+rand.Intn(5000)) * time.Millisecond)
 
 		b.money -= 50
 		b.books = [][]int{
