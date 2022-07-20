@@ -27,8 +27,7 @@ type Bot struct {
 	inGame        bool
 	numGameTrades int
 
-	money  int
-	rebuys int
+	money int
 
 	events chan *Event
 	stop   chan bool
@@ -64,7 +63,7 @@ var nChooseKs = map[int][]int{
 	12: []int{1, 12, 66, 220, 495, 792, 924, 792, 495, 220, 66, 12},
 }
 
-func NewBot(id string, roomId string, playerId int, r float64, money int, rebuys int, manager *BotManager) *Bot {
+func NewBot(id string, roomId string, playerId int, r float64, money int, manager *BotManager) *Bot {
 
 	alphas := make([]float64, len(decks))
 	for i, deck := range decks {
@@ -84,7 +83,6 @@ func NewBot(id string, roomId string, playerId int, r float64, money int, rebuys
 		roomId:        roomId,
 		playerId:      playerId,
 		money:         money,
-		rebuys:        rebuys,
 		manager:       manager,
 		r:             r,
 		alphas:        alphas,

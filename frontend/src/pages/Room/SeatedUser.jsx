@@ -60,7 +60,6 @@ export const SeatedUser = ({
         )}
       </td>
       <td className="p-2 text-left">{user.money}</td>
-      <td className="p-2 pl-4 text-left">{user.rebuys}</td>
       <td>
         {(isYou || adminView) && (
           <div className={`dropdown dropdown-end ${backgroundColor}`}>

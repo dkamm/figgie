@@ -263,13 +263,6 @@ func (g *Game) HandleOrder(player int, price int, suit Suit, side Side) HandleOr
 		}
 	}
 
-	if side == Bid && price > user.Money {
-		return HandleOrderResponse{
-			Type:         Rejected,
-			rejectReason: "not enough money",
-		}
-	}
-
 	if side == Ask && hand[suit] <= 0 {
 		return HandleOrderResponse{
 			Type:         Rejected,

@@ -30,7 +30,6 @@ export const Users = ({
               <th className="w-12 sticky top-0 z-10"></th>
               <th className="pl-2 text-left sticky top-0 z-10">User</th>
               <th className="pl-2 text-left w-16 sticky top-0 z-10">Money</th>
-              <th className="pl-4 text-left w-20 sticky top-0 z-10">Rebuys</th>
               <th className="pl-2 text-left w-16 sticky top-0 z-10"></th>
             </tr>
           </thead>

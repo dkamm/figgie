@@ -831,12 +831,11 @@ func (h *Hub) Run() {
 				}
 
 				event := NewEvent(c.RoomId, &BotAddedPayload{
-					Id:     bot.Id,
-					Name:   bot.Name,
-					Seat:   p.Seat,
-					Money:  bot.Money,
-					Rebuys: bot.Rebuys,
-					Left:   bot.Left,
+					Id:    bot.Id,
+					Name:  bot.Name,
+					Seat:  p.Seat,
+					Money: bot.Money,
+					Left:  bot.Left,
 				})
 				message, _ := json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)

@@ -133,12 +133,11 @@ type PongPayload struct {
 }
 
 type BotAddedPayload struct {
-	Id     string `json:"id"`
-	Name   string `json:"name"`
-	Seat   int    `json:"seat"`
-	Money  int    `json:"money"`
-	Rebuys int    `json:"rebuys"`
-	Left   bool   `json:"left"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Seat  int    `json:"seat"`
+	Money int    `json:"money"`
+	Left  bool   `json:"left"`
 }
 
 type BotRemovedPayload struct {

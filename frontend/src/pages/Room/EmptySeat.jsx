@@ -38,7 +38,6 @@ export const EmptySeat = ({
         )}
       </td>
       <td className="p-2 text-left"></td>
-      <td className="p-2 text-left"></td>
       <td>
         {adminView && !isSpectatorSeat && (
           <div className={`dropdown dropdown-end`}>
