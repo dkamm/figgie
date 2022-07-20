@@ -174,6 +174,8 @@ export const Room = () => {
   const isPlaying = playerId !== -1;
   const inGame = game && !game.done;
   const kicked = userId && users.byId[userId].left;
+  const takenSeats = seats.filter((s) => s);
+  const canStart = takenSeats.length === 4;
 
   if (kicked) {
     wsclient.removeMessageHandler(handler);
@@ -209,12 +211,20 @@ export const Room = () => {
                   {game && <GameSummary game={game} users={users} />}
                   {!game && <div className="py-16">No games played yet</div>}
                   {isHost && (
-                    <button
-                      className="btn btn-accent mt-4 w-48"
-                      onClick={startGame}
-                    >
-                      Start New Game
-                    </button>
+                    <div className="w-full">
+                      <div
+                        className={canStart ? "" : "tooltip tooltip-right z-50"}
+                        data-tip="There are not enough seated users to start a new game"
+                      >
+                        <button
+                          className="btn btn-accent mt-4 w-48"
+                          onClick={startGame}
+                          disabled={!canStart}
+                        >
+                          Start New Game
+                        </button>
+                      </div>
+                    </div>
                   )}
                   {!isHost && (
                     <div className="mt-4">
