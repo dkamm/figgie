@@ -52,7 +52,7 @@ func (bm *BotManager) Run() {
 				bots = make([]*Bot, 0, 4)
 				bm.bots[br.roomId] = bots
 			}
-			bot := NewBot(br.userId, br.roomId, br.playerId, 1.5+rand.Float64()*.5, 1000, bm)
+			bot := NewBot(br.userId, br.roomId, br.playerId, 1.5+rand.Float64()*.5, StartingMoney, bm)
 			go bot.Run()
 			bm.bots[br.roomId] = append(bots, bot)
 			log.Printf("registered %s", bot.id)

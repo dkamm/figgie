@@ -224,7 +224,7 @@ func (h *Hub) Run() {
 				}
 				room := NewRoom(id, p.Config)
 				h.rooms[id] = room
-				user := NewUser(m.client.userId, p.UserName, 1000, 0, -1, true)
+				user := NewUser(m.client.userId, p.UserName, StartingMoney, 0, -1, true)
 				room.users[m.client.userId] = user
 
 				m.client.roomId = room.id
@@ -280,7 +280,7 @@ func (h *Hub) Run() {
 					user = NewUser(
 						m.client.userId,
 						name,
-						1000,
+						StartingMoney,
 						seat,
 						spectatorSeat,
 						len(activeUsers) == 0,
@@ -815,7 +815,7 @@ func (h *Hub) Run() {
 				bot := NewUser(
 					botId,
 					RandomBotName(),
-					1000,
+					StartingMoney,
 					p.Seat,
 					-1,
 					false,
