@@ -223,8 +223,8 @@ export const roomReducer = (state = {}, { type, payload }) => {
       };
     }
     case "userPromoted": {
-      const adminId = state.users.allIds.filter((id) => {
-        return state.users.byId[id].admin;
+      const hostId = state.users.allIds.filter((id) => {
+        return state.users.byId[id].host;
       });
       const seat = state.seats.findIndex((s) => s === payload.userId);
       return {
@@ -235,11 +235,11 @@ export const roomReducer = (state = {}, { type, payload }) => {
             ...state.users.byId,
             [payload.userId]: {
               ...state.users.byId[payload.userId],
-              admin: true,
+              host: true,
             },
-            [adminId]: {
-              ...state.users.byId[adminId],
-              admin: false,
+            [hostId]: {
+              ...state.users.byId[hostId],
+              host: false,
             },
           },
         },

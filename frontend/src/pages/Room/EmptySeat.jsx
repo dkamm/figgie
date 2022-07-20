@@ -5,7 +5,7 @@ export const EmptySeat = ({
   takeSeat,
   startSpectating,
   addBot,
-  adminView,
+  hostView,
   inGame,
   isSpectatorSeat,
 }) => {
@@ -39,7 +39,7 @@ export const EmptySeat = ({
       </td>
       <td className="p-2 text-left"></td>
       <td>
-        {adminView && !isSpectatorSeat && (
+        {hostView && !isSpectatorSeat && (
           <div className={`dropdown dropdown-end`}>
             <label tabIndex="0" className={`btn btn-sm m-1`} disabled={inGame}>
               …

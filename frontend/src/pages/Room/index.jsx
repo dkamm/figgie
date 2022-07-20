@@ -168,7 +168,7 @@ export const Room = () => {
     };
   }, [wsclient, handler, isConnected, joinRoom, leaveRoom, name]);
 
-  const isAdmin = userId && users.byId[userId].admin;
+  const isHost = userId && users.byId[userId].host;
   const playerId =
     userId && game && game.players.findIndex((p) => p === userId);
   const isPlaying = playerId !== -1;
@@ -208,7 +208,7 @@ export const Room = () => {
                 <>
                   {game && <GameSummary game={game} users={users} />}
                   {!game && <div className="py-16">No games played yet</div>}
-                  {isAdmin && (
+                  {isHost && (
                     <button
                       className="btn btn-accent mt-4 w-48"
                       onClick={startGame}
@@ -216,9 +216,9 @@ export const Room = () => {
                       Start New Game
                     </button>
                   )}
-                  {!isAdmin && (
+                  {!isHost && (
                     <div className="mt-4">
-                      Waiting for admin to start game...
+                      Waiting for host to start game...
                     </div>
                   )}
                 </>
@@ -347,7 +347,7 @@ export const Room = () => {
               addBot={addBot}
               kickUser={kickUser}
               removeBot={removeBot}
-              adminView={isAdmin}
+              hostView={isHost}
               inGame={inGame}
               maxSpectators={config.maxSpectators}
             />

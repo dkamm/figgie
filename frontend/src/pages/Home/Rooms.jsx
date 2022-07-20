@@ -67,7 +67,7 @@ export const Rooms = () => {
             <th className="pl-2 text-left">Room</th>
             <th className="pl-2 text-left">Players</th>
             <th className="pl-2 text-left">Spectators</th>
-            <th className="pl-2 text-left">Admin</th>
+            <th className="pl-2 text-left">Host</th>
             <th className="w-20"></th>
           </tr>
         </thead>
@@ -102,7 +102,7 @@ export const Rooms = () => {
                 <td className="pl-2 text-left">
                   {room.numSpectators} / {room.maxSpectators}
                 </td>
-                <td className="pl-2 text-left">{room.adminName}</td>
+                <td className="pl-2 text-left">{room.hostName}</td>
                 <td className="text-center">
                   <button
                     className="btn btn-secondary btn-outline btn-sm mx-auto"

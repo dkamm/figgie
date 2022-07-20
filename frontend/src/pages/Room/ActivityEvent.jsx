@@ -43,7 +43,7 @@ const UserPromoted = ({ users, payload, playerId }) => {
   const user = users.byId[payload.userId];
   return (
     <div>
-      <Avatar user={user} playerId={playerId} /> was promoted to admin
+      <Avatar user={user} playerId={playerId} /> was promoted to host
     </div>
   );
 };

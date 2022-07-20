@@ -5,7 +5,7 @@ import Avatar from "components/Avatar";
 export const SeatedUser = ({
   user,
   isYou,
-  adminView,
+  hostView,
   isSpectating,
   changeName,
   promoteUser,
@@ -26,12 +26,12 @@ export const SeatedUser = ({
 
   const backgroundColor = isSpectating ? "bg-base-100" : "bg-neutral";
   const isBot = user.id.slice(0, 3) === "bot";
-  const isAdmin = user.admin;
+  const isHost = user.host;
 
   return (
     <tr className={`h-12 ${backgroundColor}`}>
       <td className="w-4 pl-2 text-right items-center">
-        {isYou && "⭐"} {isAdmin && "👑"} {isBot && "🤖"}
+        {isYou && "⭐"} {isHost && "👑"} {isBot && "🤖"}
       </td>
       <td className="p-2 text-left">
         {editing ? (
@@ -61,7 +61,7 @@ export const SeatedUser = ({
       </td>
       <td className="p-2 text-left">{user.money}</td>
       <td>
-        {(isYou || adminView) && (
+        {(isYou || hostView) && (
           <div className={`dropdown dropdown-end ${backgroundColor}`}>
             <label
               tabIndex="0"
@@ -75,7 +75,7 @@ export const SeatedUser = ({
               className="z-100 dropdown-content menu p-2 shadow bg-neutral-focus rounded-box w-48"
             >
               {" "}
-              {adminView && isBot && (
+              {hostView && isBot && (
                 <li>
                   <a
                     className="text-base-content"
@@ -99,7 +99,7 @@ export const SeatedUser = ({
                   </a>
                 </li>
               )}
-              {adminView && !isAdmin && !isBot && (
+              {hostView && !isHost && !isBot && (
                 <>
                   <li>
                     <a

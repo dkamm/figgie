@@ -15,7 +15,7 @@ export const Users = ({
   addBot,
   kickUser,
   removeBot,
-  adminView,
+  hostView,
   inGame,
 }) => {
   return (
@@ -42,7 +42,7 @@ export const Users = ({
                     key={i}
                     user={user}
                     isYou={user.id === userId}
-                    adminView={adminView}
+                    hostView={hostView}
                     changeName={changeName}
                     isSpectating={false}
                     promoteUser={promoteUser}
@@ -61,7 +61,7 @@ export const Users = ({
                   startSpectating={startSpectating}
                   inGame={inGame}
                   isSpectatorSeat={false}
-                  adminView={adminView}
+                  hostView={hostView}
                   addBot={addBot}
                 />
               );
@@ -77,7 +77,7 @@ export const Users = ({
                       startSpectating={startSpectating}
                       inGame={inGame}
                       isSpectatorSeat={true}
-                      adminView={adminView}
+                      hostView={hostView}
                       addBot={addBot}
                     />
                   );
@@ -88,7 +88,7 @@ export const Users = ({
                     key={spectator}
                     user={user}
                     isYou={user.id === userId}
-                    adminView={adminView}
+                    hostView={hostView}
                     changeName={changeName}
                     isSpectating={true}
                     promoteUser={promoteUser}
