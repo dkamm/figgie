@@ -67,9 +67,9 @@ func (r *Room) getNextIndex(userIds []string) int {
 	return -1
 }
 
-func (r *Room) admin() *User {
+func (r *Room) host() *User {
 	for _, user := range r.users {
-		if user.Admin {
+		if user.Host {
 			return user
 		}
 	}

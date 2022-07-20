@@ -14,7 +14,7 @@ type User struct {
 	Money          int       `json:"money"`
 	Seat           int       `json:"-"` // -1 if not seated
 	SpectatorSeat  int       `json:"-"` // -1 if not spectating
-	Admin          bool      `json:"admin"`
+	Host           bool      `json:"host"`
 	Left           bool      `json:"left"`
 	DisconnectedAt time.Time `json:"-"`
 	Bot            bool      `json:"bot"`
@@ -31,6 +31,6 @@ func RandomBotName() string {
 	return strings.Title(animals[rand.Intn(len(animals))]) + " Bot " + strconv.Itoa(1+rand.Intn(19))
 }
 
-func NewUser(id string, name string, money int, seat int, spectatorSeat int, admin bool) *User {
-	return &User{Id: id, Name: name, Money: money, Seat: seat, SpectatorSeat: spectatorSeat, Admin: admin}
+func NewUser(id string, name string, money int, seat int, spectatorSeat int, host bool) *User {
+	return &User{Id: id, Name: name, Money: money, Seat: seat, SpectatorSeat: spectatorSeat, Host: host}
 }

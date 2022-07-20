@@ -59,28 +59,28 @@ func (h *Hub) sendToUserClientsInRoom(roomId string, userId string, message []by
 	h.sendToUsersClientsInRoom(roomId, []string{userId}, message)
 }
 
-func (h *Hub) pickNewAdmin(room *Room) {
-	var nextAdmin *User
+func (h *Hub) pickNewHost(room *Room) {
+	var nextHost *User
 	for _, seat := range room.seats() {
 		if seat != "" && seat[:3] != "bot" {
-			nextAdmin = room.users[seat]
+			nextHost = room.users[seat]
 			break
 		}
 	}
-	if nextAdmin == nil {
+	if nextHost == nil {
 		for _, spectator := range room.spectators() {
 			if spectator != "" {
-				nextAdmin = room.users[spectator]
+				nextHost = room.users[spectator]
 				break
 			}
 		}
 	}
-	if nextAdmin == nil {
+	if nextHost == nil {
 		return
 	}
-	nextAdmin.Admin = true
+	nextHost.Host = true
 
-	event := NewEvent(room.id, &UserPromotedPayload{UserId: nextAdmin.Id})
+	event := NewEvent(room.id, &UserPromotedPayload{UserId: nextHost.Id})
 	message, _ := json.Marshal(event)
 	h.sendToUsersClientsInRoom(room.id, room.activeUserIds(), message)
 }
@@ -161,10 +161,10 @@ func (h *Hub) Run() {
 				summaries := make([]RoomSummary, 0, len(h.rooms))
 				for _, room := range h.rooms {
 					if !room.config.Private {
-						adminName := ""
-						admin := room.admin()
-						if admin != nil {
-							adminName = admin.Name
+						hostName := ""
+						host := room.host()
+						if host != nil {
+							hostName = host.Name
 						}
 						numPlayers := 0
 						for _, seat := range room.seats() {
@@ -181,7 +181,7 @@ func (h *Hub) Run() {
 						summaries = append(summaries, RoomSummary{
 							RoomId:        room.id,
 							RoomName:      room.config.Name,
-							AdminName:     adminName,
+							HostName:      hostName,
 							NumPlayers:    numPlayers,
 							NumSpectators: numSpectators,
 							MaxSpectators: room.config.MaxSpectators,
@@ -412,9 +412,9 @@ func (h *Hub) Run() {
 					message, _ = json.Marshal(event)
 					h.sendToUsersClientsInRoom(c.RoomId, otherUserIds, message)
 
-					if user.Admin {
-						// Promote another user to be admin if the admin left
-						h.pickNewAdmin(room)
+					if user.Host {
+						// Promote another user to be host if the host left
+						h.pickNewHost(room)
 					}
 				}
 
@@ -728,27 +728,27 @@ func (h *Hub) Run() {
 
 				user, ok := room.users[m.client.userId]
 
-				if !user.Admin {
+				if !user.Host {
 					continue
 				}
 
 				p := &PromoteUserPayload{}
 				json.Unmarshal(c.Payload, p)
 
-				nextAdmin, ok := room.users[p.UserId]
+				nextHost, ok := room.users[p.UserId]
 
 				if !ok {
 					continue
 				}
 
-				if nextAdmin.Left {
+				if nextHost.Left {
 					continue
 				}
 
-				user.Admin = false
-				nextAdmin.Admin = true
+				user.Host = false
+				nextHost.Host = true
 
-				event := NewEvent(c.RoomId, &UserPromotedPayload{UserId: nextAdmin.Id})
+				event := NewEvent(c.RoomId, &UserPromotedPayload{UserId: nextHost.Id})
 				message, _ := json.Marshal(event)
 				h.sendToUsersClientsInRoom(c.RoomId, room.activeUserIds(), message)
 
@@ -760,7 +760,7 @@ func (h *Hub) Run() {
 
 				user, ok := room.users[m.client.userId]
 
-				if !user.Admin {
+				if !user.Host {
 					continue
 				}
 
@@ -773,8 +773,8 @@ func (h *Hub) Run() {
 					continue
 				}
 
-				if targetUser.Admin {
-					// Admin can't kick himself
+				if targetUser.Host {
+					// Host can't kick himself
 					continue
 				}
 
@@ -798,7 +798,7 @@ func (h *Hub) Run() {
 
 				user, ok := room.users[m.client.userId]
 
-				if !user.Admin {
+				if !user.Host {
 					continue
 				}
 
@@ -848,7 +848,7 @@ func (h *Hub) Run() {
 
 				user, ok := room.users[m.client.userId]
 
-				if !user.Admin {
+				if !user.Host {
 					continue
 				}
 
@@ -933,10 +933,10 @@ func (h *Hub) Run() {
 							message, _ := json.Marshal(event)
 							h.sendToUsersClientsInRoom(room.id, otherUserIds, message)
 
-							if user.Admin {
-								// Promote new user as admin if user was admin
-								user.Admin = false
-								h.pickNewAdmin(room)
+							if user.Host {
+								// Promote new user as host if user was host
+								user.Host = false
+								h.pickNewHost(room)
 							}
 						}
 					}
