@@ -10,6 +10,7 @@ import Chat from "pages/Room/Chat";
 
 import ClickSound from "assets/click.wav";
 import CashRegisterSound from "assets/cashregister.wav";
+import { useTitle } from "hooks/title";
 
 const clickSound = new Audio(ClickSound);
 const cashRegisterSound = new Audio(CashRegisterSound);
@@ -22,6 +23,8 @@ export const Room = () => {
   const { wsclient, isConnected } = useWSClient();
 
   const navigate = useNavigate();
+
+  useTitle("Room " + roomId);
 
   const [loading, setLoading] = useState(true);
   const [failure, setFailure] = useState(null);

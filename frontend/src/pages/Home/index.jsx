@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 import { useWSClient } from "contexts/WSContext";
 import Rooms from "pages/Home/Rooms";
+import { useTitle } from "hooks/title";
 
 export const Home = () => {
   const { wsclient, isConnected } = useWSClient();
 
   const nav = useNavigate();
+
+  useTitle("Trading Simulator Game");
 
   const [userName, setUserName] = useState("");
   const [roomName, setRoomName] = useState("");

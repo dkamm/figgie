@@ -1,6 +1,8 @@
 import React from "react";
+import { useTitle } from "hooks/title";
 
 export const About = () => {
+  useTitle("About");
   return (
     <div className="w-1/2 mx-auto text-left my-4">
       <h1 className="text-xl font-semibold">About</h1>
@@ -17,7 +19,8 @@ export const About = () => {
         <a
           className="text-blue-400"
           href="mailto:hello@figgie.app"
-          target="_blank" rel="noreferrer"
+          target="_blank"
+          rel="noreferrer"
         >
           hello@figgie.app
         </a>
@@ -29,7 +32,8 @@ export const About = () => {
         <a
           className="text-blue-400"
           href="mailto:support@figgie.app"
-          target="_blank" rel="noreferrer"
+          target="_blank"
+          rel="noreferrer"
         >
           support@figgie.app
         </a>
@@ -41,7 +45,8 @@ export const About = () => {
         <a
           className="text-blue-400"
           href="https://www.figgie.com"
-          target="_blank" rel="noreferrer"
+          target="_blank"
+          rel="noreferrer"
         >
           figgie.com
         </a>

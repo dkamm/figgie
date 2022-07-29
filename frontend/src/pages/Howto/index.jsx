@@ -2,8 +2,11 @@ import React from "react";
 
 import Suit from "components/Suit";
 import { SUITS } from "constants";
+import { useTitle } from "hooks/title";
 
 export const Howto = () => {
+  useTitle("How To Play");
+
   return (
     <div className="w-1/2 mx-auto text-left my-4">
       <h1 className="text-xl font-semibold">How to play</h1>
@@ -13,7 +16,8 @@ export const Howto = () => {
         <a
           className="text-blue-400"
           href="https://janestreet.com"
-          target="_blank" rel="noreferrer"
+          target="_blank"
+          rel="noreferrer"
         >
           Jane Street
         </a>{" "}
