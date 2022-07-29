@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /rooms/
+Disallow: /howto/
+Disallow: /about/
+Disallow: /changelog/

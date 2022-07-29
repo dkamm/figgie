@@ -3,13 +3,14 @@ package main
 import (
 	"embed"
 	"flag"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
-	"github.com/gorilla/websocket"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
+	"github.com/gorilla/websocket"
 
 	"github.com/caddyserver/certmagic"
 
@@ -40,6 +41,9 @@ var staticFiles embed.FS
 
 //go:embed static/index.html
 var indexFile []byte
+
+//go:embed robots.txt
+var robotsFile []byte
 
 type catchAllHandler struct{}
 
@@ -82,6 +86,9 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ws", connectWS).Methods("GET")
+	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		w.Write(robotsFile)
+	}).Methods("GET")
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "figgie-session")
