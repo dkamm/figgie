@@ -12,10 +12,14 @@ export const Home = () => {
 
   useTitle("Trading Simulator Game");
 
+  // Create room fields
   const [userName, setUserName] = useState("");
   const [roomName, setRoomName] = useState("");
   const [maxSpectators, setMaxSpectators] = useState(4);
   const [privateRoom, setPrivateRoom] = useState(false);
+
+  // Join room fields
+  const [roomCode, setRoomCode] = useState("");
 
   const createRoom = useCallback(
     (userName, roomName, maxSpectators, privateRoom) => {
@@ -92,6 +96,8 @@ export const Home = () => {
                 placeholder="Room Code"
                 minLength={6}
                 maxLength={6}
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
               />
               <button className="block btn btn-primary" type="submit">
                 Join Room

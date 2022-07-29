@@ -149,7 +149,7 @@ func (h *Hub) Run() {
 				continue
 			}
 
-			c.RoomId = strings.ToLower(c.RoomId)
+			c.RoomId = strings.ToUpper(c.RoomId)
 
 			log.Printf("userId=%s, roomId=%s, commandType=%s", m.client.userId, m.client.roomId, c.Type)
 
@@ -217,7 +217,7 @@ func (h *Hub) Run() {
 				json.Unmarshal(c.Payload, &p)
 				var id string
 				for {
-					id = SecureRandomString(6)
+					id = strings.ToUpper(SecureRandomString(6))
 					if _, ok := h.rooms[id]; !ok {
 						break
 					}
