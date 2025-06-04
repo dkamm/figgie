@@ -2,30 +2,40 @@
 
 This is an unofficial implementation of Figgie, a fast-paced trading simulator game invented by [Jane Street](https://janestreet.com).
 
-## Developing locally
+**Learn more about Figgie:** [Rules](https://www.figgie.com/how-to-play.html) | [Play the official version](https://www.figgie.com/)
 
-To develop locally, you need two terminals.  
+![Gameplay Screenshot](assets/gameplay.png)
 
-In the first, run `scripts/start-backend.sh` to start the backend server. 
+## Features
+- Real-time multiplayer chat and trading
+- Public and private rooms with host, players and spectators
+- Bot players with AI strategies
+- Hotkeys for fast order entry
+- Self-contained deployment (no Docker needed)
 
-In the second, `cd frontend && yarn start` to start webpack dev server.
+## Prerequisites
+- Go 1.17+
+- Node.js and Yarn
 
-Webpack dev server will open app on `http://localhost:3000`
+## Running locally
+1. Install dependencies: `yarn install` (in both root and frontend)
+2. Start backend: `./scripts/start-backend.sh`
+3. Start frontend: `cd frontend && yarn start`
+4. Open http://localhost:3000
+
 
 ## Deploying
 
-Run `scripts/build.sh` to build the binary.
+1. Build server binary: `scripts/build.sh`
+2. Copy the binary to your server and run directly (defaults to port 8080)
 
-The binary is completely self contained so there is no need for docker or nginx (it has static files embedded and uses certmagic).
+The binary includes:
+- Embedded frontend assets
+- Builtin HTTPS with automatic certificate management (CertMagic)
+- No external dependencies
 
-I use systemd to run the server on an instance.
-
-## Architecture
-
-![Image](assets/architecture.png "Architecture")
-
-The state of all rooms is centralized in the Hub. Each Bot runs in its own goroutine and sends actions to/receives events from the Bot Manager.
+I use systemd to manage the server in production.
 
 ## AI
 
-The bot AI is an implementation of the "fundamentalist" from https://arxiv.org/pdf/2110.00879.pdf.  The fundamentalist is very simplistic and only takes observed card counts into account to estimate the probability of each of the 12 possible decks and expected values of each suit.
+The bot AI is an implementation of the "fundamentalist" from https://arxiv.org/pdf/2110.00879.pdf.  The fundamentalist only takes observed card counts into account to estimate the probability of each of the 12 possible decks and expected values of each suit.  Future improvements could take into account trade information to estimate these values or estimate player hands.
