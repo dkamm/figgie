@@ -18,11 +18,11 @@ export const About = () => {
         to us at{" "}
         <a
           className="text-blue-400"
-          href="mailto:hello@figgie.app"
+          href="mailto:hello@figgie.xyz"
           target="_blank"
           rel="noreferrer"
         >
-          hello@figgie.app
+          hello@figgie.xyz
         </a>
         .
       </p>
@@ -31,11 +31,11 @@ export const About = () => {
         If you encountered a problem with the site, please contact us at{" "}
         <a
           className="text-blue-400"
-          href="mailto:support@figgie.app"
+          href="mailto:support@figgie.xyz"
           target="_blank"
           rel="noreferrer"
         >
-          support@figgie.app
+          support@figgie.xyz
         </a>
         .
       </p>

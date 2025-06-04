@@ -29,7 +29,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
 		if mode == "production" {
-			return origin == "https://figgie.app"
+			return origin == "https://figgie.xyz"
 		} else {
 			return origin == "http://localhost:3000" || origin == "http://localhost:8080"
 		}
@@ -111,9 +111,9 @@ func main() {
 
 	if mode == "production" {
 		certmagic.DefaultACME.Agreed = true
-		certmagic.DefaultACME.Email = "admin@figgie.app"
+		certmagic.DefaultACME.Email = "admin@figgie.xyz"
 		certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
-		err := certmagic.HTTPS([]string{"figgie.app", "www.figgie.app"}, r)
+		err := certmagic.HTTPS([]string{"figgie.xyz", "www.figgie.xyz"}, r)
 		if err != nil {
 			log.Fatal("Error starting https server: ", err)
 		}
